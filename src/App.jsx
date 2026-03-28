@@ -3,6 +3,7 @@ import { AppShell } from "./components/layout/AppShell";
 import { Header } from "./components/layout/Header";
 import { Sidebar } from "./components/layout/Sidebar";
 import { PageContent } from "./components/layout/PageContent";
+import { StepTracker } from "./components/layout/StepTracker";
 import { PortalCard } from "./components/cards/PortalCard";
 import { DerivedSection } from "./components/cards/DerivedSection";
 import { FormRow } from "./components/fields/FormRow";
@@ -17,6 +18,24 @@ function formatCurrency(currency, amount) {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   }).format(amount || 0);
+}
+
+function parseAmount(value) {
+  const cleaned = (value || "").replace(/,/g, "").trim();
+  const parsed = Number.parseFloat(cleaned);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function formatAmountInput(value) {
+  const parsed = parseAmount(value);
+  if (!value || Number.isNaN(parsed)) {
+    return "";
+  }
+
+  return new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(parsed);
 }
 
 export default function App() {
@@ -55,11 +74,11 @@ export default function App() {
   );
 
   const currencyOptions = useMemo(
-    () => [...new Set(portalMockData.debitAccounts.map((account) => account.currency))],
+    () => [...new Set(portalMockData.debitAccounts.map((account) => account.currency))].map((currency) => ({ id: currency, label: currency })),
     []
   );
 
-  const parsedAmount = Number.parseFloat(amount) || 0;
+  const parsedAmount = parseAmount(amount);
   const beneficiaryCurrency = selectedBeneficiary?.currency || "—";
   const fxPair = `${amountCurrency}-${selectedBeneficiary?.currency || amountCurrency}`;
   const fxRate = portalMockData.derivedDefaults.fxRates[fxPair] ?? 1;
@@ -123,22 +142,25 @@ export default function App() {
     <AppShell
       sidebar={<Sidebar collapsed={isSidebarCollapsed} onToggle={() => setIsSidebarCollapsed((value) => !value)} />}
       header={
-        <Header
-          portalTitle="Corporate Banking | New Single Transfer"
-          currentTime={headerTime}
-          language={language}
-          country={country}
-          languages={portalMockData.languages}
-          countries={portalMockData.countries}
-          onLanguageChange={setLanguage}
-          onCountryChange={setCountry}
-        />
+        <>
+          <Header
+            portalTitle="Corporate Banking Payment Services"
+            currentTime={headerTime}
+            language={language}
+            country={country}
+            languages={portalMockData.languages}
+            countries={portalMockData.countries}
+            onLanguageChange={setLanguage}
+            onCountryChange={setCountry}
+          />
+          <StepTracker steps={["Initiate", "Review", "Confirmation"]} currentStep={0} />
+        </>
       }
     >
       <PageContent
         leftColumn={
           <>
-            <PortalCard title="Mandatory Fields" subtitle="Provide required inputs to initiate transfer.">
+            <PortalCard title="Single Payment Details" subtitle="Provide required inputs to initiate transfer.">
               <div className="form-grid form-grid--mandatory">
                 <SearchableSelect
                   id="debit-account"
@@ -159,32 +181,34 @@ export default function App() {
                   noDefault
                 />
 
-                <FormRow id="amount-currency" label="Amount Currency">
-                  <select id="amount-currency" value={amountCurrency} onChange={(event) => setAmountCurrency(event.target.value)}>
-                    {currencyOptions.map((currency) => (
-                      <option key={currency} value={currency}>
-                        {currency}
-                      </option>
-                    ))}
-                  </select>
-                </FormRow>
+                <SearchableSelect
+                  id="amount-currency"
+                  label="Amount Currency"
+                  options={currencyOptions}
+                  value={amountCurrency}
+                  onChange={setAmountCurrency}
+                  placeholder="Search currency"
+                />
 
                 <FormRow id="amount" label="Amount">
                   <input
                     id="amount"
-                    type="number"
-                    min="0"
-                    step="0.01"
+                    type="text"
                     inputMode="decimal"
                     value={amount}
                     placeholder="Enter amount"
-                    onChange={(event) => setAmount(event.target.value)}
+                    onChange={(event) => {
+                      const nextValue = event.target.value.replace(/[^\d.,]/g, "");
+                      setAmount(nextValue);
+                    }}
+                    onFocus={() => setAmount((previous) => previous.replace(/,/g, ""))}
+                    onBlur={() => setAmount((previous) => formatAmountInput(previous))}
                   />
                 </FormRow>
               </div>
             </PortalCard>
 
-            <PortalCard title="Optional Fields" subtitle="Supplementary fields for enriched payment context.">
+            <PortalCard title="Additional Information" subtitle="Supplementary fields for enriched payment context.">
               <div className="form-grid">
                 <FormRow id="value-date" label="Value Date">
                   <select id="value-date" value={valueDate} onChange={(event) => setValueDate(event.target.value)}>
