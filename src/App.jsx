@@ -101,8 +101,10 @@ const LABELS = {
     account_limits: "Account & Limits",
     available_balance: "Available Balance",
     daily_transfer_limit: "Daily Transfer Limit",
+    remaining_limit: "Remaining Limit",
     remaining_balance: "Remaining Balance",
     charges_fx: "Charges & FX",
+    charges: "Charges",
     debit_amount: "Debit Amount",
     pay_amount: "Pay Amount",
     fx_rate_applied: "FX Rate Applied",
@@ -210,8 +212,10 @@ const LABELS = {
     account_limits: "Compte et limites",
     available_balance: "Solde disponible",
     daily_transfer_limit: "Limite de transfert quotidienne",
+    remaining_limit: "Limite restante",
     remaining_balance: "Solde restant",
     charges_fx: "Frais et FX",
+    charges: "Frais",
     debit_amount: "Montant débité",
     pay_amount: "Montant payé",
     fx_rate_applied: "Taux FX appliqué",
@@ -478,13 +482,15 @@ export default function App() {
   const payCurrency = amountCurrency;
   const fxRate = findFxRate(debitCurrency, payCurrency, portalMockData.derivedDefaults.fxRates);
   const debitAmount = amountMode === "debit" ? parsedAmount : parsedAmount / (fxRate || 1);
-  const payAmount = amountMode === "pay" ? parsedAmount : parsedAmount * fxRate;
+  const basePayAmount = amountMode === "pay" ? parsedAmount : parsedAmount * fxRate;
+  const chargesByBearer = { OUR: 100, SHA: 50, BEN: 0 };
+  const chargeAmount = chargesByBearer[chargesBearerCode] ?? 0;
+  const payAmount = chargesBearerCode === "BEN" ? Math.max(basePayAmount - 50, 0) : basePayAmount;
 
-  const estimatedFee = portalMockData.derivedDefaults.estimatedFee;
-  const debitImpact = debitAmount + estimatedFee;
   const availableBalance = selectedDebitAccount?.availableBalance || 0;
   const dailyLimit = selectedDebitAccount?.dailyLimit || 0;
-  const remainingBalance = Math.max(availableBalance - debitImpact, 0);
+  const remainingBalance = Math.max(availableBalance - debitAmount, 0);
+  const remainingLimit = Math.max(dailyLimit - debitAmount, 0);
 
   const chargesBearerSelection = portalMockData.chargesBearerOptions.find((option) => option.code === chargesBearerCode);
   const selectedSenderPurpose = portalMockData.senderPurposeCodeOptions.find((option) => option.code === senderPurposeCode);
@@ -521,7 +527,8 @@ export default function App() {
       rows: [
         { label: t("available_balance"), value: formatCurrency(debitCurrency, availableBalance) },
         { label: t("remaining_balance"), value: formatCurrency(debitCurrency, remainingBalance) },
-        { label: t("daily_transfer_limit"), value: formatCurrency(debitCurrency, dailyLimit) }
+        { label: t("daily_transfer_limit"), value: formatCurrency(debitCurrency, dailyLimit) },
+        { label: t("remaining_limit"), value: formatCurrency(debitCurrency, remainingLimit) }
       ]
     },
     {
@@ -529,6 +536,7 @@ export default function App() {
       rows: [
         { label: t("debit_amount"), value: formatCurrency(debitCurrency, debitAmount) },
         { label: t("pay_amount"), value: formatCurrency(payCurrency, payAmount) },
+        { label: t("charges"), value: formatCurrency(debitCurrency, chargeAmount) },
         { label: t("fx_rate_applied"), value: `1 ${debitCurrency} = ${fxRate} ${payCurrency}` }
       ]
     },
@@ -601,9 +609,9 @@ export default function App() {
         { label: t("intermediary_bank"), value: selectedIntermediaryBank?.label || "—" },
         { label: t("charges_bearer"), value: chargesBearerSelection?.label || chargesBearerCode },
         { label: t("special_deal"), value: specialDeal || "—" },
-        { label: t("upload_documents"), value: selectedFiles.length ? selectedFiles.join(", ") : "—" },
         { label: t("beneficiary_advice"), value: beneficiaryAdvice || "—" },
-        { label: t("remarks"), value: remarks || "—" }
+        { label: t("remarks"), value: remarks || "—" },
+        { label: t("upload_documents"), value: selectedFiles.length ? selectedFiles.join(", ") : "—" }
       ]
     }
   ];
@@ -829,16 +837,6 @@ export default function App() {
                     />
                   </FormRow>
 
-                  <FormRow id="supporting-documents" label={t("upload_documents")}>
-                    <input
-                      id="supporting-documents"
-                      type="file"
-                      multiple
-                      onChange={(event) => setSelectedFiles(Array.from(event.target.files || []).map((file) => file.name))}
-                    />
-                    {selectedFiles.length ? <p className="inline-note">{selectedFiles.join(", ")}</p> : null}
-                  </FormRow>
-
                   <FormRow id="beneficiary-advice" label={t("beneficiary_advice")}>
                     <textarea
                       id="beneficiary-advice"
@@ -857,6 +855,16 @@ export default function App() {
 
                   <FormRow id="remarks" label={t("remarks")}>
                     <textarea id="remarks" rows={3} value={remarks} onChange={(event) => setRemarks(event.target.value)} placeholder={t("remarks_placeholder")} />
+                  </FormRow>
+
+                  <FormRow id="supporting-documents" label={t("upload_documents")}>
+                    <input
+                      id="supporting-documents"
+                      type="file"
+                      multiple
+                      onChange={(event) => setSelectedFiles(Array.from(event.target.files || []).map((file) => file.name))}
+                    />
+                    {selectedFiles.length ? <p className="inline-note">{selectedFiles.join(", ")}</p> : null}
                   </FormRow>
                 </div>
               </PortalCard>
