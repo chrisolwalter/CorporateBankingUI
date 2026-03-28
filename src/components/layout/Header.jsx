@@ -2,7 +2,6 @@ export function Header({ portalTitle, currentTime, language, country, languages,
   return (
     <header className="portal-header">
       <div className="portal-header__brand">
-        <p className="portal-header__eyebrow">Enterprise Banking Portal</p>
         <h1>{portalTitle}</h1>
       </div>
 

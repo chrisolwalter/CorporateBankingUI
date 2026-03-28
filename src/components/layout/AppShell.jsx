@@ -1,9 +1,9 @@
 export function AppShell({ header, sidebar, children }) {
   return (
     <div className="app-shell">
-      {header}
-      <div className="app-shell__body">
-        {sidebar}
+      {sidebar}
+      <div className="app-shell__workspace">
+        {header}
         <main className="app-shell__content">{children}</main>
       </div>
     </div>

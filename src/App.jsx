@@ -4,8 +4,8 @@ import { Header } from "./components/layout/Header";
 import { Sidebar } from "./components/layout/Sidebar";
 import { PageContent } from "./components/layout/PageContent";
 import { PortalCard } from "./components/cards/PortalCard";
+import { DerivedSection } from "./components/cards/DerivedSection";
 import { FormRow } from "./components/fields/FormRow";
-import { ReadOnlyRow } from "./components/fields/ReadOnlyRow";
 import { portalMockData } from "./data/portalMockData";
 import "./styles/portalLayout.css";
 
@@ -54,6 +54,7 @@ export default function App() {
   const estimatedFee = portalMockData.derivedDefaults.estimatedFee;
   const estimatedBeneficiaryAmount = parsedAmount * fxRate;
   const totalDebit = parsedAmount + estimatedFee;
+  const remainingLimit = Math.max(selectedDebitAccount.dailyLimit - totalDebit, 0);
 
   const headerTime = currentTime.toLocaleString("en-US", {
     hour12: false,
@@ -66,21 +67,49 @@ export default function App() {
     timeZoneName: "short"
   });
 
-  const derivedRows = [
-    { label: "Available Balance", value: formatCurrency(selectedDebitAccount.currency, selectedDebitAccount.availableBalance) },
-    { label: "Account Currency", value: selectedDebitAccount.currency },
-    { label: "Debit Currency", value: selectedDebitAccount.currency },
-    { label: "Beneficiary Currency", value: selectedBeneficiary.currency },
-    { label: "FX Rate", value: `1 ${selectedDebitAccount.currency} = ${fxRate} ${selectedBeneficiary.currency}` },
-    { label: "Estimated Beneficiary Amount", value: formatCurrency(selectedBeneficiary.currency, estimatedBeneficiaryAmount) },
-    { label: "Estimated Fee", value: formatCurrency(selectedDebitAccount.currency, estimatedFee) },
-    { label: "Validation Status", value: portalMockData.derivedDefaults.validationStatus, tone: "good" },
-    { label: "Cut-off Status", value: portalMockData.derivedDefaults.cutoffStatus, tone: "good" },
-    { label: "Total Debit", value: formatCurrency(selectedDebitAccount.currency, totalDebit), tone: "strong" }
+  const derivedGroups = [
+    {
+      title: "Account & Limits",
+      rows: [
+        { label: "Available Balance", value: formatCurrency(selectedDebitAccount.currency, selectedDebitAccount.availableBalance) },
+        { label: "Account Currency", value: selectedDebitAccount.currency },
+        { label: "Daily Transfer Limit", value: formatCurrency(selectedDebitAccount.currency, selectedDebitAccount.dailyLimit) },
+        { label: "Remaining Limit", value: formatCurrency(selectedDebitAccount.currency, remainingLimit) }
+      ]
+    },
+    {
+      title: "Charges & FX",
+      rows: [
+        { label: "Debit Currency", value: selectedDebitAccount.currency },
+        { label: "Beneficiary Currency", value: selectedBeneficiary.currency },
+        { label: "FX Rate", value: `1 ${selectedDebitAccount.currency} = ${fxRate} ${selectedBeneficiary.currency}` },
+        { label: "Estimated Beneficiary Amount", value: formatCurrency(selectedBeneficiary.currency, estimatedBeneficiaryAmount) },
+        { label: "Estimated Fee", value: formatCurrency(selectedDebitAccount.currency, estimatedFee) },
+        { label: "Charges Bearer", value: chargesBearer }
+      ]
+    },
+    {
+      title: "Validation & Status",
+      rows: [
+        { label: "Validation Status", value: portalMockData.derivedDefaults.validationStatus, tone: "good" },
+        { label: "Cut-off Status", value: portalMockData.derivedDefaults.cutoffStatus, tone: "good" },
+        { label: "Value Date", value: valueDate },
+        { label: "Payment Purpose", value: paymentPurpose }
+      ]
+    },
+    {
+      title: "Final Summary",
+      rows: [
+        { label: "Transfer Amount", value: formatCurrency(selectedDebitAccount.currency, parsedAmount) },
+        { label: "Total Debit", value: formatCurrency(selectedDebitAccount.currency, totalDebit), tone: "strong" },
+        { label: "Remarks", value: remarks || "—" }
+      ]
+    }
   ];
 
   return (
     <AppShell
+      sidebar={<Sidebar collapsed={isSidebarCollapsed} onToggle={() => setIsSidebarCollapsed((value) => !value)} />}
       header={
         <Header
           portalTitle="Corporate Banking | New Single Transfer"
@@ -93,95 +122,99 @@ export default function App() {
           onCountryChange={setCountry}
         />
       }
-      sidebar={<Sidebar collapsed={isSidebarCollapsed} onToggle={() => setIsSidebarCollapsed((value) => !value)} />}
     >
-      <PageContent>
-        <PortalCard title="Mandatory Fields" subtitle="Provide required inputs to initiate transfer.">
-          <div className="form-grid">
-            <FormRow id="debit-account" label="Debit Account">
-              <select id="debit-account" value={debitAccountId} onChange={(event) => setDebitAccountId(event.target.value)}>
-                {portalMockData.debitAccounts.map((account) => (
-                  <option key={account.id} value={account.id}>
-                    {account.label}
-                  </option>
-                ))}
-              </select>
-            </FormRow>
+      <PageContent
+        leftColumn={
+          <>
+            <PortalCard title="Mandatory Fields" subtitle="Provide required inputs to initiate transfer.">
+              <div className="form-grid">
+                <FormRow id="debit-account" label="Debit Account">
+                  <select id="debit-account" value={debitAccountId} onChange={(event) => setDebitAccountId(event.target.value)}>
+                    {portalMockData.debitAccounts.map((account) => (
+                      <option key={account.id} value={account.id}>
+                        {account.label}
+                      </option>
+                    ))}
+                  </select>
+                </FormRow>
 
-            <FormRow id="beneficiary-account" label="Beneficiary Account">
-              <select
-                id="beneficiary-account"
-                value={beneficiaryAccountId}
-                onChange={(event) => setBeneficiaryAccountId(event.target.value)}
-              >
-                {portalMockData.beneficiaryAccounts.map((account) => (
-                  <option key={account.id} value={account.id}>
-                    {account.label}
-                  </option>
-                ))}
-              </select>
-            </FormRow>
+                <FormRow id="beneficiary-account" label="Beneficiary Account">
+                  <select
+                    id="beneficiary-account"
+                    value={beneficiaryAccountId}
+                    onChange={(event) => setBeneficiaryAccountId(event.target.value)}
+                  >
+                    {portalMockData.beneficiaryAccounts.map((account) => (
+                      <option key={account.id} value={account.id}>
+                        {account.label}
+                      </option>
+                    ))}
+                  </select>
+                </FormRow>
 
-            <FormRow id="amount" label="Amount">
-              <input
-                id="amount"
-                type="number"
-                min="0"
-                step="0.01"
-                inputMode="decimal"
-                value={amount}
-                onChange={(event) => setAmount(event.target.value)}
-              />
-            </FormRow>
-          </div>
-        </PortalCard>
+                <FormRow id="amount" label="Amount">
+                  <input
+                    id="amount"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    inputMode="decimal"
+                    value={amount}
+                    onChange={(event) => setAmount(event.target.value)}
+                  />
+                </FormRow>
+              </div>
+            </PortalCard>
 
-        <PortalCard title="Optional Fields" subtitle="Supplementary fields for enriched payment context.">
-          <div className="form-grid">
-            <FormRow id="value-date" label="Value Date">
-              <select id="value-date" value={valueDate} onChange={(event) => setValueDate(event.target.value)}>
-                {portalMockData.valueDateOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </FormRow>
+            <PortalCard title="Optional Fields" subtitle="Supplementary fields for enriched payment context.">
+              <div className="form-grid">
+                <FormRow id="value-date" label="Value Date">
+                  <select id="value-date" value={valueDate} onChange={(event) => setValueDate(event.target.value)}>
+                    {portalMockData.valueDateOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </FormRow>
 
-            <FormRow id="payment-purpose" label="Payment Purpose">
-              <select id="payment-purpose" value={paymentPurpose} onChange={(event) => setPaymentPurpose(event.target.value)}>
-                {portalMockData.paymentPurposeOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </FormRow>
+                <FormRow id="payment-purpose" label="Payment Purpose">
+                  <select id="payment-purpose" value={paymentPurpose} onChange={(event) => setPaymentPurpose(event.target.value)}>
+                    {portalMockData.paymentPurposeOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </FormRow>
 
-            <FormRow id="remarks" label="Remarks">
-              <input id="remarks" value={remarks} onChange={(event) => setRemarks(event.target.value)} />
-            </FormRow>
+                <FormRow id="remarks" label="Remarks">
+                  <input id="remarks" value={remarks} onChange={(event) => setRemarks(event.target.value)} />
+                </FormRow>
 
-            <FormRow id="charges-bearer" label="Charges Bearer">
-              <select id="charges-bearer" value={chargesBearer} onChange={(event) => setChargesBearer(event.target.value)}>
-                {portalMockData.chargesBearerOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </FormRow>
-          </div>
-        </PortalCard>
-
-        <PortalCard title="Derived Fields" subtitle="System-computed and informational values (read-only).">
-          <dl className="readonly-list">
-            {derivedRows.map((row) => (
-              <ReadOnlyRow key={row.label} label={row.label} value={row.value} tone={row.tone} />
-            ))}
-          </dl>
-        </PortalCard>
-      </PageContent>
+                <FormRow id="charges-bearer" label="Charges Bearer">
+                  <select id="charges-bearer" value={chargesBearer} onChange={(event) => setChargesBearer(event.target.value)}>
+                    {portalMockData.chargesBearerOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </FormRow>
+              </div>
+            </PortalCard>
+          </>
+        }
+        rightColumn={
+          <PortalCard title="Derived Fields" subtitle="Read-only system-computed insights and status.">
+            <div className="derived-sections">
+              {derivedGroups.map((group) => (
+                <DerivedSection key={group.title} title={group.title} rows={group.rows} />
+              ))}
+            </div>
+          </PortalCard>
+        }
+      />
     </AppShell>
   );
 }

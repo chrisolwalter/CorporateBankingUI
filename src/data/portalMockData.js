@@ -2,9 +2,9 @@ export const portalMockData = {
   languages: ["English", "Spanish", "French", "German"],
   countries: ["United States", "United Kingdom", "Singapore", "United Arab Emirates"],
   debitAccounts: [
-    { id: "da-001", label: "US-OPS-001 • USD • ****3456", currency: "USD", availableBalance: 1240000 },
-    { id: "da-002", label: "US-TRE-883 • USD • ****7781", currency: "USD", availableBalance: 572100 },
-    { id: "da-003", label: "EU-HQ-120 • EUR • ****0034", currency: "EUR", availableBalance: 389500 }
+    { id: "da-001", label: "US-OPS-001 • USD • ****3456", currency: "USD", availableBalance: 1240000, dailyLimit: 300000 },
+    { id: "da-002", label: "US-TRE-883 • USD • ****7781", currency: "USD", availableBalance: 572100, dailyLimit: 200000 },
+    { id: "da-003", label: "EU-HQ-120 • EUR • ****0034", currency: "EUR", availableBalance: 389500, dailyLimit: 180000 }
   ],
   beneficiaryAccounts: [
     { id: "ba-100", label: "Zenith Equipment Ltd • GB99ABCD120039", currency: "GBP" },
