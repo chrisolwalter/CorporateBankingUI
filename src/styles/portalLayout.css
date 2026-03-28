@@ -55,6 +55,7 @@ body {
   background: linear-gradient(145deg, #60a5fa, #2563eb);
   color: #eff6ff;
   display: inline-flex;
+  width: fit-content;
   align-items: center;
   justify-content: center;
   font-size: 0.85rem;
@@ -84,6 +85,7 @@ body {
   border-radius: 0.45rem;
   padding: 0.36rem 0.52rem;
   display: inline-flex;
+  width: fit-content;
   justify-content: space-between;
   align-items: center;
   font-size: 0.85rem;
@@ -122,6 +124,7 @@ body {
   height: 1.45rem;
   border-radius: 0.4rem;
   display: inline-flex;
+  width: fit-content;
   align-items: center;
   justify-content: center;
   background: rgba(37, 99, 235, 0.25);
@@ -231,6 +234,17 @@ body {
   flex: 1;
   background: #dbe4ef;
   margin-left: 0.2rem;
+  position: relative;
+  overflow: hidden;
+  border-radius: 999px;
+}
+
+.step-tracker__line-progress {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: #22c55e;
+  border-radius: 999px;
+  transition: width 220ms ease;
 }
 
 .step-tracker__step.is-active {
@@ -311,6 +325,14 @@ body {
   align-items: start;
 }
 
+.form-grid--mandatory-purpose {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.form-grid--mandatory-purpose > :only-child {
+  grid-column: span 2;
+}
+
 .form-stack {
   display: grid;
   gap: 0.85rem;
@@ -318,13 +340,14 @@ body {
 
 .amount-control-row {
   display: grid;
-  grid-template-columns: 0.78fr 1fr 1fr;
+  grid-template-columns: auto 1fr 1fr;
   gap: 0.8rem;
   align-items: end;
 }
 
 .mode-toggle {
   display: inline-flex;
+  width: fit-content;
   border: 1px solid #cbd5e1;
   border-radius: 0.45rem;
   overflow: hidden;
@@ -334,7 +357,7 @@ body {
 .mode-toggle button {
   border: none;
   background: transparent;
-  padding: 0.58rem 0.75rem;
+  padding: 0.5rem 0.62rem;
   font-size: 0.86rem;
   color: #334155;
   cursor: pointer;

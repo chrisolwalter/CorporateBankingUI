@@ -64,21 +64,39 @@ export default function App() {
   const [countryCode, setCountryCode] = useState(portalMockData.countries[0].code);
   const [language, setLanguage] = useState("English");
 
-  const [debitAccountId, setDebitAccountId] = useState(portalMockData.debitAccounts[0].id);
+  const debitAccountsForCountry = useMemo(
+    () => portalMockData.debitAccounts.filter((account) => account.countryCode === countryCode),
+    [countryCode]
+  );
+
+  const [debitAccountId, setDebitAccountId] = useState("");
   const [beneficiaryId, setBeneficiaryId] = useState("");
+  const [paymentPurpose, setPaymentPurpose] = useState(portalMockData.paymentPurposeOptions[0]);
+  const [senderPurposeCode, setSenderPurposeCode] = useState("");
   const [amountMode, setAmountMode] = useState("debit");
   const [amountCurrency, setAmountCurrency] = useState(portalMockData.transferCurrencies[0].id);
   const [amount, setAmount] = useState("");
 
-  const [valueDate, setValueDate] = useState(portalMockData.valueDateOptions[1]);
-  const [paymentPurpose, setPaymentPurpose] = useState(portalMockData.paymentPurposeOptions[0]);
+  const [valueDate, setValueDate] = useState("Today");
   const [remarks, setRemarks] = useState("");
-  const [chargesBearer, setChargesBearer] = useState(portalMockData.chargesBearerOptions[0]);
+  const [chargesBearerCode, setChargesBearerCode] = useState(portalMockData.chargesBearerOptions[0].code);
 
   useEffect(() => {
     const timerId = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timerId);
   }, []);
+
+  useEffect(() => {
+    if (!debitAccountsForCountry.length) {
+      setDebitAccountId("");
+      return;
+    }
+
+    const stillValid = debitAccountsForCountry.some((account) => account.id === debitAccountId);
+    if (!stillValid) {
+      setDebitAccountId(debitAccountsForCountry[0].id);
+    }
+  }, [debitAccountsForCountry, debitAccountId]);
 
   const selectedCountry = useMemo(
     () => portalMockData.countries.find((country) => country.code === countryCode) || portalMockData.countries[0],
@@ -86,8 +104,8 @@ export default function App() {
   );
 
   const selectedDebitAccount = useMemo(
-    () => portalMockData.debitAccounts.find((account) => account.id === debitAccountId) || portalMockData.debitAccounts[0],
-    [debitAccountId]
+    () => debitAccountsForCountry.find((account) => account.id === debitAccountId) || debitAccountsForCountry[0] || null,
+    [debitAccountsForCountry, debitAccountId]
   );
 
   const selectedBeneficiary = useMemo(
@@ -95,8 +113,16 @@ export default function App() {
     [beneficiaryId]
   );
 
+  const requiresSenderPurposeCode = selectedDebitAccount ? ["AE", "IN"].includes(selectedDebitAccount.countryCode) : false;
+
+  useEffect(() => {
+    if (!requiresSenderPurposeCode) {
+      setSenderPurposeCode("");
+    }
+  }, [requiresSenderPurposeCode]);
+
   const parsedAmount = parseAmount(amount);
-  const debitCurrency = selectedDebitAccount.currency;
+  const debitCurrency = selectedDebitAccount?.currency || "USD";
   const payCurrency = amountCurrency;
   const fxRate = findFxRate(debitCurrency, payCurrency, portalMockData.derivedDefaults.fxRates);
 
@@ -104,8 +130,23 @@ export default function App() {
   const payAmount = amountMode === "pay" ? parsedAmount : parsedAmount * fxRate;
 
   const estimatedFee = portalMockData.derivedDefaults.estimatedFee;
-  const totalDebit = debitAmount + estimatedFee;
-  const remainingLimit = Math.max(selectedDebitAccount.dailyLimit - totalDebit, 0);
+  const debitImpact = debitAmount + estimatedFee;
+  const availableBalance = selectedDebitAccount?.availableBalance || 0;
+  const dailyLimit = selectedDebitAccount?.dailyLimit || 0;
+  const remainingBalance = Math.max(availableBalance - debitImpact, 0);
+
+  const chargesBearerSelection = portalMockData.chargesBearerOptions.find((option) => option.code === chargesBearerCode);
+
+  const mandatoryChecks = [
+    Boolean(debitAccountId),
+    Boolean(beneficiaryId),
+    Boolean(paymentPurpose),
+    Boolean(amountCurrency),
+    parseAmount(amount) > 0,
+    !requiresSenderPurposeCode || Boolean(senderPurposeCode)
+  ];
+
+  const mandatoryCompletion = mandatoryChecks.filter(Boolean).length / mandatoryChecks.length;
 
   const headerTime = currentTime.toLocaleString("en-US", {
     hour12: false,
@@ -122,10 +163,9 @@ export default function App() {
     {
       title: "Account & Limits",
       rows: [
-        { label: "Available Balance", value: formatCurrency(debitCurrency, selectedDebitAccount.availableBalance) },
-        { label: "Account Currency", value: debitCurrency },
-        { label: "Daily Transfer Limit", value: formatCurrency(debitCurrency, selectedDebitAccount.dailyLimit) },
-        { label: "Remaining Limit", value: formatCurrency(debitCurrency, remainingLimit) }
+        { label: "Available Balance", value: formatCurrency(debitCurrency, availableBalance) },
+        { label: "Daily Transfer Limit", value: formatCurrency(debitCurrency, dailyLimit) },
+        { label: "Remaining Balance", value: formatCurrency(debitCurrency, remainingBalance) }
       ]
     },
     {
@@ -141,8 +181,8 @@ export default function App() {
       rows: [
         { label: "Validation Status", value: beneficiaryId ? portalMockData.derivedDefaults.validationStatus : "Pending beneficiary selection" },
         { label: "Cut-off Status", value: portalMockData.derivedDefaults.cutoffStatus, tone: "good" },
-        { label: "Value Date", value: valueDate },
-        { label: "Payment Purpose", value: paymentPurpose }
+        { label: "Value Date", value: valueDate === "Today" ? "Today" : "Scheduled" },
+        { label: "Charges Bearer", value: chargesBearerSelection?.code || chargesBearerCode }
       ]
     }
   ];
@@ -165,7 +205,7 @@ export default function App() {
               setLanguage("English");
             }}
           />
-          <StepTracker steps={["Initiate", "Review", "Confirmation"]} currentStep={0} />
+          <StepTracker steps={["Initiate", "Review", "Confirmation"]} currentStep={0} progress={mandatoryCompletion} />
         </>
       }
     >
@@ -177,7 +217,7 @@ export default function App() {
                 <SearchableSelect
                   id="debit-account"
                   label="Debit Account"
-                  options={portalMockData.debitAccounts}
+                  options={debitAccountsForCountry}
                   value={debitAccountId}
                   onChange={setDebitAccountId}
                   placeholder="Search debit account"
@@ -192,6 +232,31 @@ export default function App() {
                   placeholder="Search beneficiary"
                   noDefault
                 />
+
+                <div className="form-grid form-grid--mandatory-purpose">
+                  <FormRow id="payment-purpose" label="Payment Purpose">
+                    <select id="payment-purpose" value={paymentPurpose} onChange={(event) => setPaymentPurpose(event.target.value)}>
+                      {portalMockData.paymentPurposeOptions.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </FormRow>
+
+                  {requiresSenderPurposeCode ? (
+                    <FormRow id="sender-purpose-code" label="Sender Purpose Code">
+                      <select id="sender-purpose-code" value={senderPurposeCode} onChange={(event) => setSenderPurposeCode(event.target.value)}>
+                        <option value="">Select code</option>
+                        {portalMockData.senderPurposeCodeOptions.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    </FormRow>
+                  ) : null}
+                </div>
 
                 <div className="amount-control-row">
                   <div className="mode-toggle" role="group" aria-label="amount mode">
@@ -251,25 +316,15 @@ export default function App() {
                   </select>
                 </FormRow>
 
-                <FormRow id="payment-purpose" label="Payment Purpose">
-                  <select id="payment-purpose" value={paymentPurpose} onChange={(event) => setPaymentPurpose(event.target.value)}>
-                    {portalMockData.paymentPurposeOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                </FormRow>
-
                 <FormRow id="remarks" label="Remarks">
                   <input id="remarks" value={remarks} onChange={(event) => setRemarks(event.target.value)} placeholder="Optional comments" />
                 </FormRow>
 
                 <FormRow id="charges-bearer" label="Charges Bearer">
-                  <select id="charges-bearer" value={chargesBearer} onChange={(event) => setChargesBearer(event.target.value)}>
+                  <select id="charges-bearer" value={chargesBearerCode} onChange={(event) => setChargesBearerCode(event.target.value)}>
                     {portalMockData.chargesBearerOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
+                      <option key={option.code} value={option.code}>
+                        {option.label}
                       </option>
                     ))}
                   </select>
