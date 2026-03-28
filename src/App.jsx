@@ -9,6 +9,11 @@ import { DerivedSection } from "./components/cards/DerivedSection";
 import { FormRow } from "./components/fields/FormRow";
 import { SearchableSelect } from "./components/fields/SearchableSelect";
 import { portalMockData } from "./data/portalMockData";
+import flagGlobal from "./assets/flags/global.svg";
+import flagFrance from "./assets/flags/fr.svg";
+import flagIndia from "./assets/flags/in.svg";
+import flagUae from "./assets/flags/ae.svg";
+import flagChina from "./assets/flags/cn.svg";
 import "./styles/portalLayout.css";
 
 const DEFAULT_CONFIRMATION_REFERENCE = "CBPS-20260328-104582";
@@ -23,6 +28,52 @@ const LABELS = {
     review: "Review",
     confirmation: "Confirmation",
     complete: "complete",
+    step: "Step",
+    trading_portal: "Trading Portal",
+    corporate_banking: "Corporate Banking",
+    payments: "Payments",
+    single_payments: "Single Payments",
+    primary_navigation: "primary navigation",
+    expand_sidebar: "Expand sidebar",
+    collapse_sidebar: "Collapse sidebar",
+    search_debit_account: "Select debit account",
+    search_beneficiary: "Select beneficiary",
+    search_currency: "Select amount currency",
+    enter_amount: "Enter amount",
+    select_code: "Select purpose code",
+    select_intermediary_bank: "Select intermediary bank",
+    no_selection: "— No selection —",
+    no_matching_results: "No matching results",
+    email_help: "Enter up to 5 emails, separated by commas or new lines",
+    email_error: "You can enter up to 5 email addresses.",
+    remarks_placeholder: "Enter remarks",
+    amount_mode: "amount mode",
+    debit: "Debit",
+    pay: "Pay",
+    pending_beneficiary_selection: "Pending beneficiary selection",
+    cutoff_passed: "Cut-off passed",
+    within_cutoff: "Within cut-off",
+    rolled_next_business_day: "rolled to next business day",
+    not_required: "Not required",
+    mode: "Mode",
+    not_selected: "Not selected",
+    rolled: "rolled",
+    your_payment_submitted: "Your payment has been successfully submitted.",
+    reference: "Reference",
+    corporate_authorization_steps: "Corporate Authorization Steps",
+    bank_processing_steps: "Bank Processing Steps",
+    initiated_by_maker: "Initiated by Maker",
+    awaiting_checker_authorization: "Awaiting Checker Authorization",
+    checker_approved: "Checker Approved",
+    released_to_bank: "Released to Bank",
+    payment_instruction_received: "Payment Instruction Received",
+    compliance_screening: "Compliance / Screening",
+    fx_booking_conversion: "FX Booking / Conversion",
+    payment_processing: "Payment Processing",
+    beneficiary_credit: "Beneficiary Credit",
+    completed: "Completed",
+    in_progress: "In Progress",
+    pending: "Pending",
     single_payment_details: "Single Payment Details",
     debit_account: "Debit Account",
     beneficiary: "Beneficiary",
@@ -32,6 +83,8 @@ const LABELS = {
     sender_purpose_code: "Sender Purpose Code",
     additional_information: "Additional Information",
     value_date: "Value Date",
+    today: "Today",
+    next_business_day: "Next Business Day",
     custom_date: "Custom Date",
     debit_value_date: "Debit Value Date",
     intermediary_bank: "Intermediary Bank",
@@ -78,6 +131,52 @@ const LABELS = {
     review: "Révision",
     confirmation: "Confirmation",
     complete: "complété",
+    step: "Étape",
+    trading_portal: "Portail de trading",
+    corporate_banking: "Banque corporate",
+    payments: "Paiements",
+    single_payments: "Paiements uniques",
+    primary_navigation: "navigation principale",
+    expand_sidebar: "Ouvrir la barre latérale",
+    collapse_sidebar: "Réduire la barre latérale",
+    search_debit_account: "Sélectionner le compte de débit",
+    search_beneficiary: "Sélectionner le bénéficiaire",
+    search_currency: "Sélectionner la devise du montant",
+    enter_amount: "Saisir le montant",
+    select_code: "Sélectionner un code objet",
+    select_intermediary_bank: "Sélectionner la banque intermédiaire",
+    no_selection: "— Aucune sélection —",
+    no_matching_results: "Aucun résultat correspondant",
+    email_help: "Saisissez jusqu'à 5 e-mails, séparés par des virgules ou des retours à la ligne",
+    email_error: "Vous pouvez saisir jusqu'à 5 adresses e-mail.",
+    remarks_placeholder: "Saisir des remarques",
+    amount_mode: "mode de montant",
+    debit: "Débit",
+    pay: "Paiement",
+    pending_beneficiary_selection: "Sélection du bénéficiaire en attente",
+    cutoff_passed: "Cut-off dépassé",
+    within_cutoff: "Dans le cut-off",
+    rolled_next_business_day: "reporté au jour ouvré suivant",
+    not_required: "Non requis",
+    mode: "Mode",
+    not_selected: "Non sélectionné",
+    rolled: "reporté",
+    your_payment_submitted: "Votre paiement a été soumis avec succès.",
+    reference: "Référence",
+    corporate_authorization_steps: "Étapes d'autorisation corporate",
+    bank_processing_steps: "Étapes de traitement bancaire",
+    initiated_by_maker: "Initié par le maker",
+    awaiting_checker_authorization: "En attente d'autorisation du checker",
+    checker_approved: "Checker approuvé",
+    released_to_bank: "Transmis à la banque",
+    payment_instruction_received: "Instruction de paiement reçue",
+    compliance_screening: "Conformité / Filtrage",
+    fx_booking_conversion: "Réservation FX / Conversion",
+    payment_processing: "Traitement du paiement",
+    beneficiary_credit: "Crédit bénéficiaire",
+    completed: "Terminé",
+    in_progress: "En cours",
+    pending: "En attente",
     single_payment_details: "Détails du paiement unique",
     debit_account: "Compte de débit",
     beneficiary: "Bénéficiaire",
@@ -87,6 +186,8 @@ const LABELS = {
     sender_purpose_code: "Code objet de l'émetteur",
     additional_information: "Informations complémentaires",
     value_date: "Date de valeur",
+    today: "Aujourd'hui",
+    next_business_day: "Jour ouvré suivant",
     custom_date: "Date personnalisée",
     debit_value_date: "Date de valeur débit",
     intermediary_bank: "Banque intermédiaire",
@@ -124,6 +225,14 @@ const LABELS = {
     beneficiary_bank_details: "Détails bénéficiaire et banque",
     payment_success: "Paiement soumis avec succès"
   }
+};
+
+const COUNTRY_META = {
+  GLOBAL: { flag: flagGlobal },
+  FR: { flag: flagFrance },
+  IN: { flag: flagIndia },
+  AE: { flag: flagUae },
+  CN: { flag: flagChina }
 };
 
 const getTodayDateString = (date = new Date()) => date.toISOString().slice(0, 10);
@@ -205,7 +314,7 @@ function getBeneficiaryRoutingRows(beneficiary, t) {
   return rows;
 }
 
-function Timeline({ title, steps }) {
+function Timeline({ title, steps, t }) {
   return (
     <section className="timeline-card">
       <h3>{title}</h3>
@@ -215,7 +324,7 @@ function Timeline({ title, steps }) {
             <span className="timeline__dot" aria-hidden="true" />
             <div>
               <strong>{step.label}</strong>
-              <p>{step.state === "done" ? "Completed" : step.state === "current" ? "In Progress" : "Pending"}</p>
+              <p>{step.state === "done" ? t("completed") : step.state === "current" ? t("in_progress") : t("pending")}</p>
             </div>
           </li>
         ))}
@@ -250,6 +359,12 @@ export default function App() {
 
   const isFrenchMode = countryCode === "FR" && language === "French";
   const t = (key) => (isFrenchMode ? LABELS.fr[key] : LABELS.en[key]) || key;
+  const valueDateLabel = (value) => {
+    if (value === "Today") return t("today");
+    if (value === "Next Business Day") return t("next_business_day");
+    if (value === "Custom Date") return t("custom_date");
+    return value;
+  };
 
   const debitAccountsForCountry = useMemo(() => {
     if (countryCode === "GLOBAL") return portalMockData.debitAccounts;
@@ -302,6 +417,7 @@ export default function App() {
     () => portalMockData.countries.find((country) => country.code === countryCode) || portalMockData.countries[0],
     [countryCode]
   );
+  const selectedCountryMeta = COUNTRY_META[countryCode] || COUNTRY_META.GLOBAL;
 
   const selectedDebitAccount = useMemo(
     () => debitAccountsForCountry.find((account) => account.id === debitAccountId) || debitAccountsForCountry[0] || null,
@@ -359,6 +475,7 @@ export default function App() {
   const remainingBalance = Math.max(availableBalance - debitImpact, 0);
 
   const chargesBearerSelection = portalMockData.chargesBearerOptions.find((option) => option.code === chargesBearerCode);
+  const selectedSenderPurpose = portalMockData.senderPurposeCodeOptions.find((option) => option.code === senderPurposeCode);
 
   const mandatoryChecks = [
     Boolean(debitAccountId),
@@ -406,10 +523,14 @@ export default function App() {
     {
       title: t("validation_status_section"),
       rows: [
-        { label: t("validation_status"), value: beneficiaryId ? portalMockData.derivedDefaults.validationStatus : "Pending beneficiary selection" },
-        { label: t("cutoff_status"), value: isCutoffPassed ? "Cut-off passed" : "Within cut-off", tone: isCutoffPassed ? "default" : "good" },
-        { label: t("debit_value_date"), value: debitValueDate },
-        { label: t("credit_value_date"), value: creditDateRolled ? `${creditValueDate} (rolled to next business day)` : creditValueDate }
+        { label: t("validation_status"), value: beneficiaryId ? portalMockData.derivedDefaults.validationStatus : t("pending_beneficiary_selection") },
+        { label: t("cutoff_status"), value: isCutoffPassed ? t("cutoff_passed") : t("within_cutoff"), tone: isCutoffPassed ? "danger" : "good" },
+        { label: t("debit_value_date"), value: debitValueDate, tone: isCutoffPassed ? "danger" : "default" },
+        {
+          label: t("credit_value_date"),
+          value: creditDateRolled ? `${creditValueDate} (${t("rolled_next_business_day")})` : creditValueDate,
+          tone: isCutoffPassed || creditDateRolled ? "danger" : "default"
+        }
       ]
     },
     {
@@ -433,8 +554,15 @@ export default function App() {
         { label: t("debit_account"), value: selectedDebitAccount?.label || "—" },
         { label: t("beneficiary"), value: selectedBeneficiary?.label || "—" },
         { label: t("payment_purpose"), value: paymentPurpose },
-        { label: t("sender_purpose_code"), value: requiresSenderPurposeCode ? senderPurposeCode || "—" : "Not required" },
-        { label: "Mode", value: amountMode === "debit" ? "Debit" : "Pay" },
+        {
+          label: t("sender_purpose_code"),
+          value: requiresSenderPurposeCode
+            ? selectedSenderPurpose
+              ? `${selectedSenderPurpose.label} (${selectedSenderPurpose.code})`
+              : "—"
+            : t("not_required")
+        },
+        { label: t("mode"), value: amountMode === "debit" ? t("debit") : t("pay") },
         { label: t("amount_currency"), value: amountCurrency },
         { label: t("amount"), value: amount || "—" }
       ]
@@ -442,10 +570,10 @@ export default function App() {
     {
       title: t("additional_information"),
       items: [
-        { label: t("value_date"), value: valueDate },
-        { label: t("custom_date"), value: valueDate === "Custom Date" ? customDate : "Not selected" },
+        { label: t("value_date"), value: valueDateLabel(valueDate) },
+        { label: t("custom_date"), value: valueDate === "Custom Date" ? customDate : t("not_selected") },
         { label: t("debit_value_date"), value: debitValueDate },
-        { label: t("credit_value_date"), value: creditDateRolled ? `${creditValueDate} (rolled)` : creditValueDate },
+        { label: t("credit_value_date"), value: creditDateRolled ? `${creditValueDate} (${t("rolled")})` : creditValueDate },
         { label: t("intermediary_bank"), value: selectedIntermediaryBank?.label || "—" },
         { label: t("charges_bearer"), value: chargesBearerSelection?.label || chargesBearerCode },
         { label: t("upload_documents"), value: selectedFiles.length ? selectedFiles.join(", ") : "—" },
@@ -468,18 +596,18 @@ export default function App() {
   ];
 
   const corporateTimeline = [
-    { label: "Initiated by Maker", state: "done" },
-    { label: "Awaiting Checker Authorization", state: "current" },
-    { label: "Checker Approved", state: "pending" },
-    { label: "Released to Bank", state: "pending" }
+    { label: t("initiated_by_maker"), state: "done" },
+    { label: t("awaiting_checker_authorization"), state: "current" },
+    { label: t("checker_approved"), state: "pending" },
+    { label: t("released_to_bank"), state: "pending" }
   ];
 
   const bankTimeline = [
-    { label: "Payment Instruction Received", state: "done" },
-    { label: "Compliance / Screening", state: "current" },
-    { label: "FX Booking / Conversion", state: "pending" },
-    { label: "Payment Processing", state: "pending" },
-    { label: "Beneficiary Credit", state: "pending" }
+    { label: t("payment_instruction_received"), state: "done" },
+    { label: t("compliance_screening"), state: "current" },
+    { label: t("fx_booking_conversion"), state: "pending" },
+    { label: t("payment_processing"), state: "pending" },
+    { label: t("beneficiary_credit"), state: "pending" }
   ];
 
   const resetFlow = () => {
@@ -503,7 +631,21 @@ export default function App() {
 
   return (
     <AppShell
-      sidebar={<Sidebar collapsed={isSidebarCollapsed} onToggle={() => setIsSidebarCollapsed((value) => !value)} />}
+      sidebar={
+        <Sidebar
+          collapsed={isSidebarCollapsed}
+          onToggle={() => setIsSidebarCollapsed((value) => !value)}
+          labels={{
+            corporateBanking: t("corporate_banking"),
+            tradingPortal: t("trading_portal"),
+            expandSidebar: t("expand_sidebar"),
+            collapseSidebar: t("collapse_sidebar"),
+            primaryNavigation: t("primary_navigation"),
+            payments: t("payments"),
+            singlePayments: t("single_payments")
+          }}
+        />
+      }
       header={
         <>
           <Header
@@ -511,7 +653,7 @@ export default function App() {
             currentTime={headerTime}
             language={language}
             country={countryCode}
-            countryFlag={selectedCountry.flag}
+            countryFlag={selectedCountryMeta.flag}
             labels={{ currentTime: t("current_time"), language: t("language"), country: t("country") }}
             languages={selectedCountry.languages}
             countries={portalMockData.countries.map((country) => ({ value: country.code, label: country.label }))}
@@ -527,6 +669,7 @@ export default function App() {
             progress={stepProgress}
             completed={currentStep === 2}
             completeLabel={t("complete")}
+            stepLabelPrefix={t("step")}
           />
         </>
       }
@@ -543,7 +686,8 @@ export default function App() {
                     options={debitAccountsForCountry}
                     value={debitAccountId}
                     onChange={setDebitAccountId}
-                    placeholder="Search debit account"
+                    placeholder={t("search_debit_account")}
+                    emptyLabel={t("no_matching_results")}
                   />
 
                   <SearchableSelect
@@ -552,14 +696,16 @@ export default function App() {
                     options={portalMockData.beneficiaryAccounts}
                     value={beneficiaryId}
                     onChange={setBeneficiaryId}
-                    placeholder="Search beneficiary"
+                    placeholder={t("search_beneficiary")}
                     noDefault
+                    noSelectionLabel={t("no_selection")}
+                    emptyLabel={t("no_matching_results")}
                   />
 
                   <div className="amount-control-row">
-                    <div className="mode-toggle" role="group" aria-label="amount mode">
-                      <button type="button" className={amountMode === "debit" ? "is-active" : ""} onClick={() => setAmountMode("debit")}>Debit</button>
-                      <button type="button" className={amountMode === "pay" ? "is-active" : ""} onClick={() => setAmountMode("pay")}>Pay</button>
+                    <div className="mode-toggle" role="group" aria-label={t("amount_mode")}>
+                      <button type="button" className={amountMode === "debit" ? "is-active" : ""} onClick={() => setAmountMode("debit")}>{t("debit")}</button>
+                      <button type="button" className={amountMode === "pay" ? "is-active" : ""} onClick={() => setAmountMode("pay")}>{t("pay")}</button>
                     </div>
 
                     <SearchableSelect
@@ -568,7 +714,8 @@ export default function App() {
                       options={portalMockData.transferCurrencies}
                       value={amountCurrency}
                       onChange={setAmountCurrency}
-                      placeholder="Search currency"
+                      placeholder={t("search_currency")}
+                      emptyLabel={t("no_matching_results")}
                     />
 
                     <FormRow id="amount" label={t("amount")}>
@@ -577,7 +724,7 @@ export default function App() {
                         type="text"
                         inputMode="decimal"
                         value={amount}
-                        placeholder="Enter amount"
+                        placeholder={t("enter_amount")}
                         onChange={(event) => setAmount(event.target.value.replace(/[^\d.,]/g, ""))}
                         onFocus={() => setAmount((previous) => previous.replace(/,/g, ""))}
                         onBlur={() => setAmount((previous) => formatAmountInput(previous))}
@@ -596,10 +743,10 @@ export default function App() {
 
                     {requiresSenderPurposeCode ? (
                       <FormRow id="sender-purpose-code" label={t("sender_purpose_code")}>
-                        <select id="sender-purpose-code" value={senderPurposeCode} onChange={(event) => setSenderPurposeCode(event.target.value)}>
-                          <option value="">Select code</option>
+                      <select id="sender-purpose-code" value={senderPurposeCode} onChange={(event) => setSenderPurposeCode(event.target.value)}>
+                          <option value="">{t("select_code")}</option>
                           {portalMockData.senderPurposeCodeOptions.map((option) => (
-                            <option key={option} value={option}>{option}</option>
+                            <option key={option.code} value={option.code}>{option.label}</option>
                           ))}
                         </select>
                       </FormRow>
@@ -614,7 +761,7 @@ export default function App() {
                     <select id="value-date" value={valueDate} onChange={(event) => setValueDate(event.target.value)}>
                       {portalMockData.valueDateOptions.map((option) => {
                         if (option === "Today" && isCutoffPassed) return null;
-                        const label = option === "Customer Date" ? t("custom_date") : option;
+                        const label = valueDateLabel(option);
                         return <option key={option} value={option}>{label}</option>;
                       })}
                     </select>
@@ -632,8 +779,10 @@ export default function App() {
                     options={portalMockData.intermediaryBanks}
                     value={intermediaryBankId}
                     onChange={setIntermediaryBankId}
-                    placeholder="Select intermediary bank"
+                    placeholder={t("select_intermediary_bank")}
                     noDefault
+                    noSelectionLabel={t("no_selection")}
+                    emptyLabel={t("no_matching_results")}
                   />
 
                   <FormRow id="charges-bearer" label={t("charges_bearer")}>
@@ -658,12 +807,12 @@ export default function App() {
                     <textarea
                       id="beneficiary-advice"
                       rows={3}
-                      placeholder="Enter up to 5 emails, separated by commas or new lines"
+                      placeholder={t("email_help")}
                       value={beneficiaryAdvice}
                       onChange={(event) => {
                         const nextValue = event.target.value;
                         const emails = parseEmails(nextValue);
-                        setAdviceError(emails.length > 5 ? "You can enter up to 5 email addresses." : "");
+                        setAdviceError(emails.length > 5 ? t("email_error") : "");
                         setBeneficiaryAdvice(nextValue);
                       }}
                     />
@@ -671,7 +820,7 @@ export default function App() {
                   </FormRow>
 
                   <FormRow id="remarks" label={t("remarks")}>
-                    <textarea id="remarks" rows={3} value={remarks} onChange={(event) => setRemarks(event.target.value)} placeholder="Optional multi-line comments" />
+                    <textarea id="remarks" rows={3} value={remarks} onChange={(event) => setRemarks(event.target.value)} placeholder={t("remarks_placeholder")} />
                   </FormRow>
                 </div>
               </PortalCard>
@@ -719,13 +868,13 @@ export default function App() {
         <section className="confirmation-page">
           <PortalCard title={t("payment_success")}>
             <div className="confirmation-banner">
-              <p>Your payment has been successfully submitted.</p>
-              <strong>Reference: {confirmationReference}</strong>
+              <p>{t("your_payment_submitted")}</p>
+              <strong>{t("reference")}: {confirmationReference}</strong>
             </div>
 
             <div className="confirmation-timelines">
-              <Timeline title="Corporate Authorization Steps" steps={corporateTimeline} />
-              <Timeline title="Bank Processing Steps" steps={bankTimeline} />
+              <Timeline title={t("corporate_authorization_steps")} steps={corporateTimeline} t={t} />
+              <Timeline title={t("bank_processing_steps")} steps={bankTimeline} t={t} />
             </div>
 
             <div className="page-actions">

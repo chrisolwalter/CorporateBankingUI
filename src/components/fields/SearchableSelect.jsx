@@ -8,7 +8,9 @@ export function SearchableSelect({
   onChange,
   placeholder = "Search...",
   required = false,
-  noDefault = false
+  noDefault = false,
+  noSelectionLabel = "— No selection —",
+  emptyLabel = "No matching results"
 }) {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -69,7 +71,7 @@ export function SearchableSelect({
                       handleSelect("");
                     }}
                   >
-                    — No selection —
+                    {noSelectionLabel}
                   </button>
                 </li>
               ) : null}
@@ -89,7 +91,7 @@ export function SearchableSelect({
               ))}
             </>
           ) : (
-            <li className="searchable-select__empty">No matching accounts</li>
+            <li className="searchable-select__empty">{emptyLabel}</li>
           )}
         </ul>
       ) : null}

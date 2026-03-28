@@ -1,10 +1,10 @@
 export const portalMockData = {
   countries: [
-    { code: "GLOBAL", label: "Global", flag: "🌐", languages: ["English"] },
-    { code: "FR", label: "France", flag: "🇫🇷", languages: ["English", "French"] },
-    { code: "IN", label: "India", flag: "🇮🇳", languages: ["English", "Hindi"] },
-    { code: "AE", label: "UAE", flag: "🇦🇪", languages: ["English", "Arabic"] },
-    { code: "CN", label: "China", flag: "🇨🇳", languages: ["English"] }
+    { code: "GLOBAL", label: "Global", languages: ["English"] },
+    { code: "FR", label: "France", languages: ["English", "French"] },
+    { code: "IN", label: "India", languages: ["English", "Hindi"] },
+    { code: "AE", label: "UAE", languages: ["English", "Arabic"] },
+    { code: "CN", label: "China", languages: ["English"] }
   ],
   debitAccounts: [
     { id: "da-fr-001", countryCode: "FR", label: "FR-OPS-001 • EUR • ****1048", currency: "EUR", availableBalance: 920000, dailyLimit: 260000 },
@@ -132,9 +132,15 @@ export const portalMockData = {
     { id: "CNY", label: "CNY (Chinese Yuan)" },
     { id: "INR", label: "INR" }
   ],
-  valueDateOptions: ["Today", "Next Business Day", "Customer Date"],
+  valueDateOptions: ["Today", "Next Business Day", "Custom Date"],
   paymentPurposeOptions: ["Vendor Payment", "Payroll", "Intercompany", "Tax Settlement"],
-  senderPurposeCodeOptions: ["SALA", "GDSV", "TRAD", "TAXS"],
+  senderPurposeCodeOptions: [
+    { code: "TRAD", label: "Trade Settlement" },
+    { code: "SALA", label: "Salary Payment" },
+    { code: "GDSV", label: "Goods / Services" },
+    { code: "INTC", label: "Intercompany Transfer" },
+    { code: "TAXS", label: "Tax Settlement" }
+  ],
   chargesBearerOptions: [
     { code: "OUR", label: "OUR - We pay all charges" },
     { code: "SHA", label: "SHA - Charges are shared" },

@@ -36,7 +36,9 @@ export function Header({
         <label className="portal-header__select-wrap">
           <span>{labels.country}</span>
           <div className="portal-header__country-wrap">
-            <span className="portal-header__country-flag" aria-hidden="true">{countryFlag}</span>
+            <span className="portal-header__country-flag" aria-hidden="true">
+              <img src={countryFlag} alt="" />
+            </span>
             <select value={country} onChange={(event) => onCountryChange(event.target.value)}>
               {countries.map((option) => (
                 <option key={option.value} value={option.value}>

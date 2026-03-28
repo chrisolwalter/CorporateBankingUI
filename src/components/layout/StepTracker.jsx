@@ -1,4 +1,11 @@
-export function StepTracker({ steps, currentStep, progress = 0, completed = false, completeLabel = "complete" }) {
+export function StepTracker({
+  steps,
+  currentStep,
+  progress = 0,
+  completed = false,
+  completeLabel = "complete",
+  stepLabelPrefix = "Step"
+}) {
   const clampedProgress = Math.max(0, Math.min(progress, 1));
   const percentage = Math.round(clampedProgress * 100);
 
@@ -17,7 +24,7 @@ export function StepTracker({ steps, currentStep, progress = 0, completed = fals
             >
               <span className="step-tracker__dot" aria-hidden="true" />
               <div className="step-tracker__text">
-                <small>Step {index + 1}</small>
+                <small>{stepLabelPrefix} {index + 1}</small>
                 <strong>{step}</strong>
               </div>
               {index < steps.length - 1 ? (
