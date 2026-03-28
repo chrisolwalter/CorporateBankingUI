@@ -1,10 +1,10 @@
-export function StepTracker({ steps, currentStep, progress = 0, completed = false }) {
+export function StepTracker({ steps, currentStep, progress = 0, completed = false, completeLabel = "complete" }) {
   const clampedProgress = Math.max(0, Math.min(progress, 1));
   const percentage = Math.round(clampedProgress * 100);
 
   return (
     <section className="step-tracker" aria-label="payment process tracker">
-      <div className="step-tracker__meta">{percentage}% complete</div>
+      <div className="step-tracker__meta">{percentage}% {completeLabel}</div>
       <div className="step-tracker__steps">
         {steps.map((step, index) => {
           const isActive = index === currentStep;

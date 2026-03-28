@@ -13,6 +13,119 @@ import "./styles/portalLayout.css";
 
 const DEFAULT_CONFIRMATION_REFERENCE = "CBPS-20260328-104582";
 
+const LABELS = {
+  en: {
+    header_title: "Corporate Banking Payment Services",
+    current_time: "Current Time",
+    language: "Language",
+    country: "Country",
+    initiate: "Initiate",
+    review: "Review",
+    confirmation: "Confirmation",
+    complete: "complete",
+    single_payment_details: "Single Payment Details",
+    debit_account: "Debit Account",
+    beneficiary: "Beneficiary",
+    amount_currency: "Amount Currency",
+    amount: "Amount",
+    payment_purpose: "Payment Purpose",
+    sender_purpose_code: "Sender Purpose Code",
+    additional_information: "Additional Information",
+    value_date: "Value Date",
+    custom_date: "Custom Date",
+    debit_value_date: "Debit Value Date",
+    intermediary_bank: "Intermediary Bank",
+    charges_bearer: "Charges Bearer",
+    upload_documents: "Upload Supporting Documents",
+    beneficiary_advice: "Beneficiary Advice Emails",
+    remarks: "Remarks",
+    submit: "Submit",
+    back: "Back",
+    confirm_submit: "Confirm / Submit for Authorization",
+    back_to_payments: "Back to Payments",
+    create_another: "Create Another Payment",
+    account_limits: "Account & Limits",
+    available_balance: "Available Balance",
+    daily_transfer_limit: "Daily Transfer Limit",
+    remaining_balance: "Remaining Balance",
+    charges_fx: "Charges & FX",
+    debit_amount: "Debit Amount",
+    pay_amount: "Pay Amount",
+    fx_rate_applied: "FX Rate Applied",
+    validation_status_section: "Validation & Status",
+    validation_status: "Validation Status",
+    cutoff_status: "Cut-off Status",
+    credit_value_date: "Credit Value Date",
+    beneficiary_details: "Beneficiary Details",
+    beneficiary_name: "Beneficiary Name",
+    beneficiary_account_iban: "Beneficiary Account Number / IBAN",
+    beneficiary_country: "Beneficiary Country",
+    beneficiary_bank_name: "Beneficiary Bank Name",
+    beneficiary_bank_address: "Beneficiary Bank Address",
+    beneficiary_address: "Beneficiary Address",
+    swift_code: "Beneficiary Bank SWIFT Code",
+    review_payment: "Review Payment Details",
+    payment_details_entered: "Payment Details Entered",
+    beneficiary_bank_details: "Beneficiary & Bank Details",
+    payment_success: "Payment Submitted Successfully"
+  },
+  fr: {
+    header_title: "Services de Paiement Bancaire Corporate",
+    current_time: "Heure actuelle",
+    language: "Langue",
+    country: "Pays",
+    initiate: "Initiation",
+    review: "Révision",
+    confirmation: "Confirmation",
+    complete: "complété",
+    single_payment_details: "Détails du paiement unique",
+    debit_account: "Compte de débit",
+    beneficiary: "Bénéficiaire",
+    amount_currency: "Devise du montant",
+    amount: "Montant",
+    payment_purpose: "Objet du paiement",
+    sender_purpose_code: "Code objet de l'émetteur",
+    additional_information: "Informations complémentaires",
+    value_date: "Date de valeur",
+    custom_date: "Date personnalisée",
+    debit_value_date: "Date de valeur débit",
+    intermediary_bank: "Banque intermédiaire",
+    charges_bearer: "Prise en charge des frais",
+    upload_documents: "Télécharger les justificatifs",
+    beneficiary_advice: "Emails d'avis au bénéficiaire",
+    remarks: "Remarques",
+    submit: "Soumettre",
+    back: "Retour",
+    confirm_submit: "Confirmer / Soumettre pour autorisation",
+    back_to_payments: "Retour aux paiements",
+    create_another: "Créer un autre paiement",
+    account_limits: "Compte et limites",
+    available_balance: "Solde disponible",
+    daily_transfer_limit: "Limite de transfert quotidienne",
+    remaining_balance: "Solde restant",
+    charges_fx: "Frais et FX",
+    debit_amount: "Montant débité",
+    pay_amount: "Montant payé",
+    fx_rate_applied: "Taux FX appliqué",
+    validation_status_section: "Validation et statut",
+    validation_status: "Statut de validation",
+    cutoff_status: "Statut de cut-off",
+    credit_value_date: "Date de valeur crédit",
+    beneficiary_details: "Détails du bénéficiaire",
+    beneficiary_name: "Nom du bénéficiaire",
+    beneficiary_account_iban: "Compte bénéficiaire / IBAN",
+    beneficiary_country: "Pays du bénéficiaire",
+    beneficiary_bank_name: "Banque du bénéficiaire",
+    beneficiary_bank_address: "Adresse de la banque du bénéficiaire",
+    beneficiary_address: "Adresse du bénéficiaire",
+    swift_code: "Code SWIFT de la banque bénéficiaire",
+    review_payment: "Vérifier les détails du paiement",
+    payment_details_entered: "Détails du paiement saisis",
+    beneficiary_bank_details: "Détails bénéficiaire et banque",
+    payment_success: "Paiement soumis avec succès"
+  }
+};
+
 const getTodayDateString = (date = new Date()) => date.toISOString().slice(0, 10);
 
 function nextBusinessDate(date) {
@@ -80,22 +193,14 @@ function parseEmails(input) {
     .filter(Boolean);
 }
 
-function getBeneficiaryRoutingRows(beneficiary) {
-  if (!beneficiary) {
-    return [];
-  }
+function getBeneficiaryRoutingRows(beneficiary, t) {
+  if (!beneficiary) return [];
 
-  const rows = [{ label: "Beneficiary Bank SWIFT Code", value: beneficiary.swiftCode || "—" }];
-
-  if (beneficiary.country === "India") {
-    rows.push({ label: "IFSC Code", value: beneficiary.ifscCode || "—" });
-  } else if (beneficiary.country === "United Kingdom") {
-    rows.push({ label: "Sort Code", value: beneficiary.sortCode || "—" });
-  } else if (beneficiary.country === "United States") {
-    rows.push({ label: "Fedwire Code", value: beneficiary.fedwireCode || "—" });
-  } else if (beneficiary.country === "UAE") {
-    rows.push({ label: "UAE Routing Code", value: beneficiary.uaeRoutingCode || "—" });
-  }
+  const rows = [{ label: t("swift_code"), value: beneficiary.swiftCode || "—" }];
+  if (beneficiary.country === "India") rows.push({ label: "IFSC Code", value: beneficiary.ifscCode || "—" });
+  else if (beneficiary.country === "United Kingdom") rows.push({ label: "Sort Code", value: beneficiary.sortCode || "—" });
+  else if (beneficiary.country === "United States") rows.push({ label: "Fedwire Code", value: beneficiary.fedwireCode || "—" });
+  else if (beneficiary.country === "UAE") rows.push({ label: "UAE Routing Code", value: beneficiary.uaeRoutingCode || "—" });
 
   return rows;
 }
@@ -143,11 +248,11 @@ export default function App() {
   const [countryCode, setCountryCode] = useState(portalMockData.countries[0].code);
   const [language, setLanguage] = useState("English");
 
-  const debitAccountsForCountry = useMemo(() => {
-    if (countryCode === "GLOBAL") {
-      return portalMockData.debitAccounts;
-    }
+  const isFrenchMode = countryCode === "FR" && language === "French";
+  const t = (key) => (isFrenchMode ? LABELS.fr[key] : LABELS.en[key]) || key;
 
+  const debitAccountsForCountry = useMemo(() => {
+    if (countryCode === "GLOBAL") return portalMockData.debitAccounts;
     return portalMockData.debitAccounts.filter((account) => account.countryCode === countryCode);
   }, [countryCode]);
 
@@ -160,7 +265,7 @@ export default function App() {
   const [amount, setAmount] = useState("");
 
   const [valueDate, setValueDate] = useState(defaultValueDateByCutoff());
-  const [customerDate, setCustomerDate] = useState(getTodayDateString(nextBusinessDate(new Date())));
+  const [customDate, setCustomDate] = useState(getTodayDateString(nextBusinessDate(new Date())));
   const [intermediaryBankId, setIntermediaryBankId] = useState("");
   const [remarks, setRemarks] = useState("");
   const [chargesBearerCode, setChargesBearerCode] = useState(portalMockData.chargesBearerOptions[0].code);
@@ -175,14 +280,20 @@ export default function App() {
     return () => clearInterval(timerId);
   }, []);
 
+  const isCutoffPassed = currentTime.getHours() >= 16;
+
+  useEffect(() => {
+    if (isCutoffPassed && valueDate === "Today") {
+      setValueDate("Next Business Day");
+    }
+  }, [isCutoffPassed, valueDate]);
+
   useEffect(() => {
     if (!debitAccountsForCountry.length) {
       setDebitAccountId("");
       return;
     }
-
-    const stillValid = debitAccountsForCountry.some((account) => account.id === debitAccountId);
-    if (!stillValid) {
+    if (!debitAccountsForCountry.some((account) => account.id === debitAccountId)) {
       setDebitAccountId(debitAccountsForCountry[0].id);
     }
   }, [debitAccountsForCountry, debitAccountId]);
@@ -210,25 +321,18 @@ export default function App() {
   const requiresSenderPurposeCode = selectedDebitAccount ? ["AE", "IN"].includes(selectedDebitAccount.countryCode) : false;
 
   useEffect(() => {
-    if (!requiresSenderPurposeCode) {
-      setSenderPurposeCode("");
-    }
+    if (!requiresSenderPurposeCode) setSenderPurposeCode("");
   }, [requiresSenderPurposeCode]);
 
-  const isCutoffPassed = currentTime.getHours() >= 16;
   const todayDate = getTodayDateString(currentTime);
   const nextBizDate = getTodayDateString(nextBusinessDate(currentTime));
+  const minCustomDate = isCutoffPassed ? nextBizDate : todayDate;
 
-  const debitValueDate =
-    valueDate === "Today"
-      ? todayDate
-      : valueDate === "Next Business Day"
-      ? nextBizDate
-      : customerDate;
+  const debitValueDate = valueDate === "Today" ? todayDate : valueDate === "Next Business Day" ? nextBizDate : customDate;
 
   const creditDateRolled =
     (valueDate === "Today" && isCutoffPassed) ||
-    (valueDate === "Customer Date" && isCutoffPassed && customerDate === todayDate);
+    (valueDate === "Custom Date" && isCutoffPassed && customDate <= todayDate);
 
   const creditValueDate =
     valueDate === "Today"
@@ -239,13 +343,12 @@ export default function App() {
       ? nextBizDate
       : creditDateRolled
       ? nextBizDate
-      : customerDate;
+      : customDate;
 
   const parsedAmount = parseAmount(amount);
   const debitCurrency = selectedDebitAccount?.currency || "USD";
   const payCurrency = amountCurrency;
   const fxRate = findFxRate(debitCurrency, payCurrency, portalMockData.derivedDefaults.fxRates);
-
   const debitAmount = amountMode === "debit" ? parsedAmount : parsedAmount / (fxRate || 1);
   const payAmount = amountMode === "pay" ? parsedAmount : parsedAmount * fxRate;
 
@@ -263,7 +366,8 @@ export default function App() {
     Boolean(paymentPurpose),
     Boolean(amountCurrency),
     parseAmount(amount) > 0,
-    !requiresSenderPurposeCode || Boolean(senderPurposeCode)
+    !requiresSenderPurposeCode || Boolean(senderPurposeCode),
+    !(valueDate === "Custom Date") || Boolean(customDate)
   ];
 
   const mandatoryCompletion = mandatoryChecks.filter(Boolean).length / mandatoryChecks.length;
@@ -280,88 +384,84 @@ export default function App() {
     timeZoneName: "short"
   });
 
-  const beneficiaryRoutingRows = getBeneficiaryRoutingRows(selectedBeneficiary);
+  const beneficiaryRoutingRows = getBeneficiaryRoutingRows(selectedBeneficiary, t);
 
   const rightSections = [
     {
-      title: "Account & Limits",
+      title: t("account_limits"),
       rows: [
-        { label: "Available Balance", value: formatCurrency(debitCurrency, availableBalance) },
-        { label: "Daily Transfer Limit", value: formatCurrency(debitCurrency, dailyLimit) },
-        { label: "Remaining Balance", value: formatCurrency(debitCurrency, remainingBalance) }
+        { label: t("available_balance"), value: formatCurrency(debitCurrency, availableBalance) },
+        { label: t("daily_transfer_limit"), value: formatCurrency(debitCurrency, dailyLimit) },
+        { label: t("remaining_balance"), value: formatCurrency(debitCurrency, remainingBalance) }
       ]
     },
     {
-      title: "Charges & FX",
+      title: t("charges_fx"),
       rows: [
-        { label: "Debit Amount", value: formatCurrency(debitCurrency, debitAmount) },
-        { label: "Pay Amount", value: formatCurrency(payCurrency, payAmount) },
-        { label: "FX Rate Applied", value: `1 ${debitCurrency} = ${fxRate} ${payCurrency}` }
+        { label: t("debit_amount"), value: formatCurrency(debitCurrency, debitAmount) },
+        { label: t("pay_amount"), value: formatCurrency(payCurrency, payAmount) },
+        { label: t("fx_rate_applied"), value: `1 ${debitCurrency} = ${fxRate} ${payCurrency}` }
       ]
     },
     {
-      title: "Validation & Status",
+      title: t("validation_status_section"),
       rows: [
-        { label: "Validation Status", value: beneficiaryId ? portalMockData.derivedDefaults.validationStatus : "Pending beneficiary selection" },
-        { label: "Cut-off Status", value: isCutoffPassed ? "Cut-off passed" : "Within cut-off", tone: isCutoffPassed ? "default" : "good" },
-        { label: "Debit Value Date", value: debitValueDate },
-        {
-          label: "Credit Value Date",
-          value: creditDateRolled ? `${creditValueDate} (rolled to next business day)` : creditValueDate
-        }
+        { label: t("validation_status"), value: beneficiaryId ? portalMockData.derivedDefaults.validationStatus : "Pending beneficiary selection" },
+        { label: t("cutoff_status"), value: isCutoffPassed ? "Cut-off passed" : "Within cut-off", tone: isCutoffPassed ? "default" : "good" },
+        { label: t("debit_value_date"), value: debitValueDate },
+        { label: t("credit_value_date"), value: creditDateRolled ? `${creditValueDate} (rolled to next business day)` : creditValueDate }
       ]
     },
     {
-      title: "Beneficiary Details",
+      title: t("beneficiary_details"),
       rows: [
-        { label: "Beneficiary Name", value: selectedBeneficiary?.name || "—" },
-        { label: "Beneficiary Account Number / IBAN", value: selectedBeneficiary?.accountNumber || "—" },
-        { label: "Beneficiary Country", value: selectedBeneficiary?.country || "—" },
-        { label: "Beneficiary Bank Name", value: selectedBeneficiary?.bankName || "—" },
-        { label: "Beneficiary Bank Address", value: selectedBeneficiary?.bankAddress || "—" },
+        { label: t("beneficiary_name"), value: selectedBeneficiary?.name || "—" },
+        { label: t("beneficiary_account_iban"), value: selectedBeneficiary?.accountNumber || "—" },
+        { label: t("beneficiary_country"), value: selectedBeneficiary?.country || "—" },
+        { label: t("beneficiary_bank_name"), value: selectedBeneficiary?.bankName || "—" },
+        { label: t("beneficiary_bank_address"), value: selectedBeneficiary?.bankAddress || "—" },
         ...beneficiaryRoutingRows,
-        { label: "Beneficiary Address", value: selectedBeneficiary?.beneficiaryAddress || "—" }
+        { label: t("beneficiary_address"), value: selectedBeneficiary?.beneficiaryAddress || "—" }
       ]
     }
   ];
 
   const reviewLeftGroups = [
     {
-      title: "Payment Details Entered",
+      title: t("payment_details_entered"),
       items: [
-        { label: "Debit Account", value: selectedDebitAccount?.label || "—" },
-        { label: "Beneficiary", value: selectedBeneficiary?.label || "—" },
-        { label: "Payment Purpose", value: paymentPurpose },
-        { label: "Sender Purpose Code", value: requiresSenderPurposeCode ? senderPurposeCode || "—" : "Not required" },
-        { label: "Amount Mode", value: amountMode === "debit" ? "Debit" : "Pay" },
-        { label: "Amount Currency", value: amountCurrency },
-        { label: "Amount", value: amount || "—" }
+        { label: t("debit_account"), value: selectedDebitAccount?.label || "—" },
+        { label: t("beneficiary"), value: selectedBeneficiary?.label || "—" },
+        { label: t("payment_purpose"), value: paymentPurpose },
+        { label: t("sender_purpose_code"), value: requiresSenderPurposeCode ? senderPurposeCode || "—" : "Not required" },
+        { label: "Mode", value: amountMode === "debit" ? "Debit" : "Pay" },
+        { label: t("amount_currency"), value: amountCurrency },
+        { label: t("amount"), value: amount || "—" }
       ]
     },
     {
-      title: "Additional Information",
+      title: t("additional_information"),
       items: [
-        { label: "Value Date Option", value: valueDate },
-        { label: "Customer Date", value: valueDate === "Customer Date" ? customerDate : "Not selected" },
-        { label: "Debit Value Date", value: debitValueDate },
-        { label: "Credit Value Date", value: creditDateRolled ? `${creditValueDate} (rolled)` : creditValueDate },
-        { label: "Intermediary Bank", value: selectedIntermediaryBank?.label || "—" },
-        { label: "Charges Bearer", value: chargesBearerSelection?.label || chargesBearerCode },
-        { label: "Uploaded Documents", value: selectedFiles.length ? selectedFiles.join(", ") : "—" },
-        { label: "Beneficiary Advice Emails", value: beneficiaryAdvice || "—" },
-        { label: "Remarks", value: remarks || "—" }
+        { label: t("value_date"), value: valueDate },
+        { label: t("custom_date"), value: valueDate === "Custom Date" ? customDate : "Not selected" },
+        { label: t("debit_value_date"), value: debitValueDate },
+        { label: t("credit_value_date"), value: creditDateRolled ? `${creditValueDate} (rolled)` : creditValueDate },
+        { label: t("intermediary_bank"), value: selectedIntermediaryBank?.label || "—" },
+        { label: t("charges_bearer"), value: chargesBearerSelection?.label || chargesBearerCode },
+        { label: t("upload_documents"), value: selectedFiles.length ? selectedFiles.join(", ") : "—" },
+        { label: t("beneficiary_advice"), value: beneficiaryAdvice || "—" },
+        { label: t("remarks"), value: remarks || "—" }
       ]
     },
     {
-      title: "Beneficiary & Bank Details",
+      title: t("beneficiary_bank_details"),
       items: [
-        { label: "Beneficiary Name", value: selectedBeneficiary?.name || "—" },
-        { label: "Beneficiary Account", value: selectedBeneficiary?.accountNumber || "—" },
-        { label: "Beneficiary Country", value: selectedBeneficiary?.country || "—" },
-        { label: "Beneficiary Address", value: selectedBeneficiary?.beneficiaryAddress || "—" },
-        { label: "Beneficiary Bank Name", value: selectedBeneficiary?.bankName || "—" },
-        { label: "Beneficiary Bank Address", value: selectedBeneficiary?.bankAddress || "—" },
-        { label: "SWIFT Code", value: selectedBeneficiary?.swiftCode || "—" },
+        { label: t("beneficiary_name"), value: selectedBeneficiary?.name || "—" },
+        { label: t("beneficiary_account_iban"), value: selectedBeneficiary?.accountNumber || "—" },
+        { label: t("beneficiary_country"), value: selectedBeneficiary?.country || "—" },
+        { label: t("beneficiary_address"), value: selectedBeneficiary?.beneficiaryAddress || "—" },
+        { label: t("beneficiary_bank_name"), value: selectedBeneficiary?.bankName || "—" },
+        { label: t("beneficiary_bank_address"), value: selectedBeneficiary?.bankAddress || "—" },
         ...beneficiaryRoutingRows
       ]
     }
@@ -391,7 +491,7 @@ export default function App() {
     setAmountCurrency(portalMockData.transferCurrencies[0].id);
     setAmount("");
     setValueDate(defaultValueDateByCutoff());
-    setCustomerDate(getTodayDateString(nextBusinessDate(new Date())));
+    setCustomDate(getTodayDateString(nextBusinessDate(new Date())));
     setIntermediaryBankId("");
     setRemarks("");
     setChargesBearerCode(portalMockData.chargesBearerOptions[0].code);
@@ -407,11 +507,12 @@ export default function App() {
       header={
         <>
           <Header
-            portalTitle="Corporate Banking Payment Services"
+            portalTitle={t("header_title")}
             currentTime={headerTime}
             language={language}
             country={countryCode}
             countryFlag={selectedCountry.flag}
+            labels={{ currentTime: t("current_time"), language: t("language"), country: t("country") }}
             languages={selectedCountry.languages}
             countries={portalMockData.countries.map((country) => ({ value: country.code, label: country.label }))}
             onLanguageChange={setLanguage}
@@ -420,7 +521,13 @@ export default function App() {
               setLanguage("English");
             }}
           />
-          <StepTracker steps={["Initiate", "Review", "Confirmation"]} currentStep={currentStep} progress={stepProgress} completed={currentStep === 2} />
+          <StepTracker
+            steps={[t("initiate"), t("review"), t("confirmation")]}
+            currentStep={currentStep}
+            progress={stepProgress}
+            completed={currentStep === 2}
+            completeLabel={t("complete")}
+          />
         </>
       }
     >
@@ -428,11 +535,11 @@ export default function App() {
         <PageContent
           leftColumn={
             <>
-              <PortalCard title="Single Payment Details">
+              <PortalCard title={t("single_payment_details")}>
                 <div className="form-stack">
                   <SearchableSelect
                     id="debit-account"
-                    label="Debit Account"
+                    label={t("debit_account")}
                     options={debitAccountsForCountry}
                     value={debitAccountId}
                     onChange={setDebitAccountId}
@@ -441,7 +548,7 @@ export default function App() {
 
                   <SearchableSelect
                     id="beneficiary"
-                    label="Beneficiary"
+                    label={t("beneficiary")}
                     options={portalMockData.beneficiaryAccounts}
                     value={beneficiaryId}
                     onChange={setBeneficiaryId}
@@ -449,98 +556,79 @@ export default function App() {
                     noDefault
                   />
 
-                  <div className="form-grid form-grid--mandatory-purpose">
-                    <FormRow id="payment-purpose" label="Payment Purpose">
-                      <select id="payment-purpose" value={paymentPurpose} onChange={(event) => setPaymentPurpose(event.target.value)}>
-                        {portalMockData.paymentPurposeOptions.map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))}
-                      </select>
-                    </FormRow>
-
-                    {requiresSenderPurposeCode ? (
-                      <FormRow id="sender-purpose-code" label="Sender Purpose Code">
-                        <select id="sender-purpose-code" value={senderPurposeCode} onChange={(event) => setSenderPurposeCode(event.target.value)}>
-                          <option value="">Select code</option>
-                          {portalMockData.senderPurposeCodeOptions.map((option) => (
-                            <option key={option} value={option}>
-                              {option}
-                            </option>
-                          ))}
-                        </select>
-                      </FormRow>
-                    ) : null}
-                  </div>
-
                   <div className="amount-control-row">
                     <div className="mode-toggle" role="group" aria-label="amount mode">
-                      <button
-                        type="button"
-                        className={amountMode === "debit" ? "is-active" : ""}
-                        onClick={() => setAmountMode("debit")}
-                      >
-                        Debit
-                      </button>
-                      <button
-                        type="button"
-                        className={amountMode === "pay" ? "is-active" : ""}
-                        onClick={() => setAmountMode("pay")}
-                      >
-                        Pay
-                      </button>
+                      <button type="button" className={amountMode === "debit" ? "is-active" : ""} onClick={() => setAmountMode("debit")}>Debit</button>
+                      <button type="button" className={amountMode === "pay" ? "is-active" : ""} onClick={() => setAmountMode("pay")}>Pay</button>
                     </div>
 
                     <SearchableSelect
                       id="amount-currency"
-                      label="Amount Currency"
+                      label={t("amount_currency")}
                       options={portalMockData.transferCurrencies}
                       value={amountCurrency}
                       onChange={setAmountCurrency}
                       placeholder="Search currency"
                     />
 
-                    <FormRow id="amount" label="Amount">
+                    <FormRow id="amount" label={t("amount")}>
                       <input
                         id="amount"
                         type="text"
                         inputMode="decimal"
                         value={amount}
                         placeholder="Enter amount"
-                        onChange={(event) => {
-                          const nextValue = event.target.value.replace(/[^\d.,]/g, "");
-                          setAmount(nextValue);
-                        }}
+                        onChange={(event) => setAmount(event.target.value.replace(/[^\d.,]/g, ""))}
                         onFocus={() => setAmount((previous) => previous.replace(/,/g, ""))}
                         onBlur={() => setAmount((previous) => formatAmountInput(previous))}
                       />
                     </FormRow>
                   </div>
+
+                  <div className="form-grid form-grid--mandatory-purpose">
+                    <FormRow id="payment-purpose" label={t("payment_purpose")}>
+                      <select id="payment-purpose" value={paymentPurpose} onChange={(event) => setPaymentPurpose(event.target.value)}>
+                        {portalMockData.paymentPurposeOptions.map((option) => (
+                          <option key={option} value={option}>{option}</option>
+                        ))}
+                      </select>
+                    </FormRow>
+
+                    {requiresSenderPurposeCode ? (
+                      <FormRow id="sender-purpose-code" label={t("sender_purpose_code")}>
+                        <select id="sender-purpose-code" value={senderPurposeCode} onChange={(event) => setSenderPurposeCode(event.target.value)}>
+                          <option value="">Select code</option>
+                          {portalMockData.senderPurposeCodeOptions.map((option) => (
+                            <option key={option} value={option}>{option}</option>
+                          ))}
+                        </select>
+                      </FormRow>
+                    ) : null}
+                  </div>
                 </div>
               </PortalCard>
 
-              <PortalCard title="Additional Information">
+              <PortalCard title={t("additional_information")}>
                 <div className="form-grid">
-                  <FormRow id="value-date" label="Value Date">
+                  <FormRow id="value-date" label={t("value_date")}>
                     <select id="value-date" value={valueDate} onChange={(event) => setValueDate(event.target.value)}>
-                      {portalMockData.valueDateOptions.map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
+                      {portalMockData.valueDateOptions.map((option) => {
+                        if (option === "Today" && isCutoffPassed) return null;
+                        const label = option === "Customer Date" ? t("custom_date") : option;
+                        return <option key={option} value={option}>{label}</option>;
+                      })}
                     </select>
                   </FormRow>
 
-                  {valueDate === "Customer Date" ? (
-                    <FormRow id="customer-date" label="Customer Date">
-                      <input id="customer-date" type="date" value={customerDate} onChange={(event) => setCustomerDate(event.target.value)} />
+                  {valueDate === "Custom Date" ? (
+                    <FormRow id="custom-date" label={t("debit_value_date")}>
+                      <input id="custom-date" type="date" min={minCustomDate} value={customDate} onChange={(event) => setCustomDate(event.target.value)} />
                     </FormRow>
                   ) : null}
 
                   <SearchableSelect
                     id="intermediary-bank"
-                    label="Intermediary Bank"
+                    label={t("intermediary_bank")}
                     options={portalMockData.intermediaryBanks}
                     value={intermediaryBankId}
                     onChange={setIntermediaryBankId}
@@ -548,30 +636,25 @@ export default function App() {
                     noDefault
                   />
 
-                  <FormRow id="charges-bearer" label="Charges Bearer">
+                  <FormRow id="charges-bearer" label={t("charges_bearer")}>
                     <select id="charges-bearer" value={chargesBearerCode} onChange={(event) => setChargesBearerCode(event.target.value)}>
                       {portalMockData.chargesBearerOptions.map((option) => (
-                        <option key={option.code} value={option.code}>
-                          {option.label}
-                        </option>
+                        <option key={option.code} value={option.code}>{option.label}</option>
                       ))}
                     </select>
                   </FormRow>
 
-                  <FormRow id="supporting-documents" label="Upload Supporting Documents">
+                  <FormRow id="supporting-documents" label={t("upload_documents")}>
                     <input
                       id="supporting-documents"
                       type="file"
                       multiple
-                      onChange={(event) => {
-                        const files = Array.from(event.target.files || []).map((file) => file.name);
-                        setSelectedFiles(files);
-                      }}
+                      onChange={(event) => setSelectedFiles(Array.from(event.target.files || []).map((file) => file.name))}
                     />
                     {selectedFiles.length ? <p className="inline-note">{selectedFiles.join(", ")}</p> : null}
                   </FormRow>
 
-                  <FormRow id="beneficiary-advice" label="Beneficiary Advice Emails">
+                  <FormRow id="beneficiary-advice" label={t("beneficiary_advice")}>
                     <textarea
                       id="beneficiary-advice"
                       rows={3}
@@ -580,43 +663,33 @@ export default function App() {
                       onChange={(event) => {
                         const nextValue = event.target.value;
                         const emails = parseEmails(nextValue);
-                        if (emails.length > 5) {
-                          setAdviceError("You can enter up to 5 email addresses.");
-                        } else {
-                          setAdviceError("");
-                        }
+                        setAdviceError(emails.length > 5 ? "You can enter up to 5 email addresses." : "");
                         setBeneficiaryAdvice(nextValue);
                       }}
                     />
                     {adviceError ? <p className="inline-error">{adviceError}</p> : null}
                   </FormRow>
 
-                  <FormRow id="remarks" label="Remarks">
-                    <textarea
-                      id="remarks"
-                      rows={3}
-                      value={remarks}
-                      onChange={(event) => setRemarks(event.target.value)}
-                      placeholder="Optional multi-line comments"
-                    />
+                  <FormRow id="remarks" label={t("remarks")}>
+                    <textarea id="remarks" rows={3} value={remarks} onChange={(event) => setRemarks(event.target.value)} placeholder="Optional multi-line comments" />
                   </FormRow>
                 </div>
               </PortalCard>
 
               <div className="page-actions page-actions--right">
-                <button type="button" className="btn btn--primary" onClick={() => setCurrentStep(1)}>
-                  Submit
+                <button
+                  type="button"
+                  className="btn btn--primary"
+                  onClick={() => {
+                    if (!(isCutoffPassed && valueDate === "Today")) setCurrentStep(1);
+                  }}
+                >
+                  {t("submit")}
                 </button>
               </div>
             </>
           }
-          rightColumn={
-            <div className="derived-sections derived-sections--standalone">
-              {rightSections.map((section) => (
-                <DerivedSection key={section.title} title={section.title} rows={section.rows} />
-              ))}
-            </div>
-          }
+          rightColumn={<div className="derived-sections derived-sections--standalone">{rightSections.map((section) => <DerivedSection key={section.title} title={section.title} rows={section.rows} />)}</div>}
         />
       ) : null}
 
@@ -624,7 +697,7 @@ export default function App() {
         <PageContent
           leftColumn={
             <>
-              <PortalCard title="Review Payment Details">
+              <PortalCard title={t("review_payment")}>
                 <div className="review-layout">
                   {reviewLeftGroups.map((group) => (
                     <ReviewList key={group.title} title={group.title} items={group.items} />
@@ -633,35 +706,18 @@ export default function App() {
               </PortalCard>
 
               <div className="page-actions">
-                <button type="button" className="btn btn--secondary" onClick={() => setCurrentStep(0)}>
-                  Back
-                </button>
-                <button
-                  type="button"
-                  className="btn btn--primary"
-                  onClick={() => {
-                    setConfirmationReference(DEFAULT_CONFIRMATION_REFERENCE);
-                    setCurrentStep(2);
-                  }}
-                >
-                  Confirm / Submit for Authorization
-                </button>
+                <button type="button" className="btn btn--secondary" onClick={() => setCurrentStep(0)}>{t("back")}</button>
+                <button type="button" className="btn btn--primary" onClick={() => { setConfirmationReference(DEFAULT_CONFIRMATION_REFERENCE); setCurrentStep(2); }}>{t("confirm_submit")}</button>
               </div>
             </>
           }
-          rightColumn={
-            <div className="derived-sections derived-sections--standalone">
-              {rightSections.map((section) => (
-                <DerivedSection key={section.title} title={section.title} rows={section.rows} />
-              ))}
-            </div>
-          }
+          rightColumn={<div className="derived-sections derived-sections--standalone">{rightSections.map((section) => <DerivedSection key={section.title} title={section.title} rows={section.rows} />)}</div>}
         />
       ) : null}
 
       {currentStep === 2 ? (
         <section className="confirmation-page">
-          <PortalCard title="Payment Submitted Successfully">
+          <PortalCard title={t("payment_success")}>
             <div className="confirmation-banner">
               <p>Your payment has been successfully submitted.</p>
               <strong>Reference: {confirmationReference}</strong>
@@ -673,12 +729,8 @@ export default function App() {
             </div>
 
             <div className="page-actions">
-              <button type="button" className="btn btn--secondary" onClick={resetFlow}>
-                Create Another Payment
-              </button>
-              <button type="button" className="btn btn--primary" onClick={resetFlow}>
-                Back to Payments
-              </button>
+              <button type="button" className="btn btn--secondary" onClick={resetFlow}>{t("create_another")}</button>
+              <button type="button" className="btn btn--primary" onClick={resetFlow}>{t("back_to_payments")}</button>
             </div>
           </PortalCard>
         </section>

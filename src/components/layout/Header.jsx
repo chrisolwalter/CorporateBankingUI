@@ -1,4 +1,15 @@
-export function Header({ portalTitle, currentTime, language, country, countryFlag, languages, countries, onLanguageChange, onCountryChange }) {
+export function Header({
+  portalTitle,
+  currentTime,
+  language,
+  country,
+  countryFlag,
+  languages,
+  countries,
+  onLanguageChange,
+  onCountryChange,
+  labels
+}) {
   return (
     <header className="portal-header">
       <div className="portal-header__brand">
@@ -7,12 +18,12 @@ export function Header({ portalTitle, currentTime, language, country, countryFla
 
       <div className="portal-header__controls">
         <div className="portal-header__time">
-          <span>Current Time</span>
+          <span>{labels.currentTime}</span>
           <strong>{currentTime}</strong>
         </div>
 
         <label className="portal-header__select-wrap">
-          <span>Language</span>
+          <span>{labels.language}</span>
           <select value={language} onChange={(event) => onLanguageChange(event.target.value)}>
             {languages.map((option) => (
               <option key={option} value={option}>
@@ -23,7 +34,7 @@ export function Header({ portalTitle, currentTime, language, country, countryFla
         </label>
 
         <label className="portal-header__select-wrap">
-          <span>Country</span>
+          <span>{labels.country}</span>
           <div className="portal-header__country-wrap">
             <span className="portal-header__country-flag" aria-hidden="true">{countryFlag}</span>
             <select value={country} onChange={(event) => onCountryChange(event.target.value)}>
