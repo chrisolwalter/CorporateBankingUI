@@ -1,9 +1,10 @@
 export const portalMockData = {
   countries: [
-    { code: "FR", label: "France 🇫🇷", languages: ["English", "French"] },
-    { code: "IN", label: "India 🇮🇳", languages: ["English", "Hindi"] },
-    { code: "AE", label: "UAE 🇦🇪", languages: ["English", "Arabic"] },
-    { code: "CN", label: "China 🇨🇳", languages: ["English"] }
+    { code: "GLOBAL", label: "Global", flag: "🌐", languages: ["English"] },
+    { code: "FR", label: "France", flag: "🇫🇷", languages: ["English", "French"] },
+    { code: "IN", label: "India", flag: "🇮🇳", languages: ["English", "Hindi"] },
+    { code: "AE", label: "UAE", flag: "🇦🇪", languages: ["English", "Arabic"] },
+    { code: "CN", label: "China", flag: "🇨🇳", languages: ["English"] }
   ],
   debitAccounts: [
     { id: "da-fr-001", countryCode: "FR", label: "FR-OPS-001 • EUR • ****1048", currency: "EUR", availableBalance: 920000, dailyLimit: 260000 },

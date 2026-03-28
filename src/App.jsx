@@ -11,6 +11,8 @@ import { SearchableSelect } from "./components/fields/SearchableSelect";
 import { portalMockData } from "./data/portalMockData";
 import "./styles/portalLayout.css";
 
+const DEFAULT_CONFIRMATION_REFERENCE = "CBPS-20260328-104582";
+
 function formatCurrency(currency, amount) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -57,17 +59,56 @@ function findFxRate(baseCurrency, quoteCurrency, fxRates) {
   return 1;
 }
 
+function Timeline({ title, steps }) {
+  return (
+    <section className="timeline-card">
+      <h3>{title}</h3>
+      <ul className="timeline">
+        {steps.map((step) => (
+          <li key={step.label} className={`timeline__item timeline__item--${step.state}`}>
+            <span className="timeline__dot" aria-hidden="true" />
+            <div>
+              <strong>{step.label}</strong>
+              <p>{step.state === "done" ? "Completed" : step.state === "current" ? "In Progress" : "Pending"}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function ReviewList({ title, items }) {
+  return (
+    <section className="review-group">
+      <h3>{title}</h3>
+      <dl className="readonly-list">
+        {items.map((item) => (
+          <div className="readonly-row" key={item.label}>
+            <dt>{item.label}</dt>
+            <dd>{item.value}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  );
+}
+
 export default function App() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentStep, setCurrentStep] = useState(0);
 
   const [countryCode, setCountryCode] = useState(portalMockData.countries[0].code);
   const [language, setLanguage] = useState("English");
 
-  const debitAccountsForCountry = useMemo(
-    () => portalMockData.debitAccounts.filter((account) => account.countryCode === countryCode),
-    [countryCode]
-  );
+  const debitAccountsForCountry = useMemo(() => {
+    if (countryCode === "GLOBAL") {
+      return portalMockData.debitAccounts;
+    }
+
+    return portalMockData.debitAccounts.filter((account) => account.countryCode === countryCode);
+  }, [countryCode]);
 
   const [debitAccountId, setDebitAccountId] = useState("");
   const [beneficiaryId, setBeneficiaryId] = useState("");
@@ -80,6 +121,7 @@ export default function App() {
   const [valueDate, setValueDate] = useState("Today");
   const [remarks, setRemarks] = useState("");
   const [chargesBearerCode, setChargesBearerCode] = useState(portalMockData.chargesBearerOptions[0].code);
+  const [confirmationReference, setConfirmationReference] = useState(DEFAULT_CONFIRMATION_REFERENCE);
 
   useEffect(() => {
     const timerId = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -147,6 +189,7 @@ export default function App() {
   ];
 
   const mandatoryCompletion = mandatoryChecks.filter(Boolean).length / mandatoryChecks.length;
+  const stepProgress = currentStep === 0 ? mandatoryCompletion : 1;
 
   const headerTime = currentTime.toLocaleString("en-US", {
     hour12: false,
@@ -187,6 +230,58 @@ export default function App() {
     }
   ];
 
+  const reviewLeftGroups = [
+    {
+      title: "Payment Inputs",
+      items: [
+        { label: "Debit Account", value: selectedDebitAccount?.label || "—" },
+        { label: "Beneficiary", value: selectedBeneficiary?.label || "—" },
+        { label: "Payment Purpose", value: paymentPurpose },
+        { label: "Sender Purpose Code", value: requiresSenderPurposeCode ? senderPurposeCode || "—" : "Not required" },
+        { label: "Amount Mode", value: amountMode === "debit" ? "Debit" : "Pay" },
+        { label: "Amount Currency", value: amountCurrency },
+        { label: "Amount", value: amount || "—" }
+      ]
+    },
+    {
+      title: "Additional Information",
+      items: [
+        { label: "Value Date", value: valueDate },
+        { label: "Remarks", value: remarks || "—" },
+        { label: "Charges Bearer", value: chargesBearerSelection?.label || chargesBearerCode }
+      ]
+    }
+  ];
+
+  const corporateTimeline = [
+    { label: "Initiated by Maker", state: "done" },
+    { label: "Awaiting Checker Authorization", state: "current" },
+    { label: "Checker Approved", state: "pending" },
+    { label: "Released to Bank", state: "pending" }
+  ];
+
+  const bankTimeline = [
+    { label: "Payment Instruction Received", state: "done" },
+    { label: "Compliance / Screening", state: "current" },
+    { label: "FX Booking / Conversion", state: "pending" },
+    { label: "Payment Processing", state: "pending" },
+    { label: "Beneficiary Credit", state: "pending" }
+  ];
+
+  const resetFlow = () => {
+    setCurrentStep(0);
+    setBeneficiaryId("");
+    setPaymentPurpose(portalMockData.paymentPurposeOptions[0]);
+    setSenderPurposeCode("");
+    setAmountMode("debit");
+    setAmountCurrency(portalMockData.transferCurrencies[0].id);
+    setAmount("");
+    setValueDate("Today");
+    setRemarks("");
+    setChargesBearerCode(portalMockData.chargesBearerOptions[0].code);
+    setConfirmationReference(DEFAULT_CONFIRMATION_REFERENCE);
+  };
+
   return (
     <AppShell
       sidebar={<Sidebar collapsed={isSidebarCollapsed} onToggle={() => setIsSidebarCollapsed((value) => !value)} />}
@@ -197,6 +292,7 @@ export default function App() {
             currentTime={headerTime}
             language={language}
             country={countryCode}
+            countryFlag={selectedCountry.flag}
             languages={selectedCountry.languages}
             countries={portalMockData.countries.map((country) => ({ value: country.code, label: country.label }))}
             onLanguageChange={setLanguage}
@@ -205,38 +301,111 @@ export default function App() {
               setLanguage("English");
             }}
           />
-          <StepTracker steps={["Initiate", "Review", "Confirmation"]} currentStep={0} progress={mandatoryCompletion} />
+          <StepTracker steps={["Initiate", "Review", "Confirmation"]} currentStep={currentStep} progress={stepProgress} />
         </>
       }
     >
-      <PageContent
-        leftColumn={
-          <>
-            <PortalCard title="Single Payment Details" subtitle="Provide required inputs to initiate transfer.">
-              <div className="form-stack">
-                <SearchableSelect
-                  id="debit-account"
-                  label="Debit Account"
-                  options={debitAccountsForCountry}
-                  value={debitAccountId}
-                  onChange={setDebitAccountId}
-                  placeholder="Search debit account"
-                />
+      {currentStep === 0 ? (
+        <PageContent
+          leftColumn={
+            <>
+              <PortalCard title="Single Payment Details">
+                <div className="form-stack">
+                  <SearchableSelect
+                    id="debit-account"
+                    label="Debit Account"
+                    options={debitAccountsForCountry}
+                    value={debitAccountId}
+                    onChange={setDebitAccountId}
+                    placeholder="Search debit account"
+                  />
 
-                <SearchableSelect
-                  id="beneficiary"
-                  label="Beneficiary"
-                  options={portalMockData.beneficiaryAccounts}
-                  value={beneficiaryId}
-                  onChange={setBeneficiaryId}
-                  placeholder="Search beneficiary"
-                  noDefault
-                />
+                  <SearchableSelect
+                    id="beneficiary"
+                    label="Beneficiary"
+                    options={portalMockData.beneficiaryAccounts}
+                    value={beneficiaryId}
+                    onChange={setBeneficiaryId}
+                    placeholder="Search beneficiary"
+                    noDefault
+                  />
 
-                <div className="form-grid form-grid--mandatory-purpose">
-                  <FormRow id="payment-purpose" label="Payment Purpose">
-                    <select id="payment-purpose" value={paymentPurpose} onChange={(event) => setPaymentPurpose(event.target.value)}>
-                      {portalMockData.paymentPurposeOptions.map((option) => (
+                  <div className="form-grid form-grid--mandatory-purpose">
+                    <FormRow id="payment-purpose" label="Payment Purpose">
+                      <select id="payment-purpose" value={paymentPurpose} onChange={(event) => setPaymentPurpose(event.target.value)}>
+                        {portalMockData.paymentPurposeOptions.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    </FormRow>
+
+                    {requiresSenderPurposeCode ? (
+                      <FormRow id="sender-purpose-code" label="Sender Purpose Code">
+                        <select id="sender-purpose-code" value={senderPurposeCode} onChange={(event) => setSenderPurposeCode(event.target.value)}>
+                          <option value="">Select code</option>
+                          {portalMockData.senderPurposeCodeOptions.map((option) => (
+                            <option key={option} value={option}>
+                              {option}
+                            </option>
+                          ))}
+                        </select>
+                      </FormRow>
+                    ) : null}
+                  </div>
+
+                  <div className="amount-control-row">
+                    <div className="mode-toggle" role="group" aria-label="amount mode">
+                      <button
+                        type="button"
+                        className={amountMode === "debit" ? "is-active" : ""}
+                        onClick={() => setAmountMode("debit")}
+                      >
+                        Debit
+                      </button>
+                      <button
+                        type="button"
+                        className={amountMode === "pay" ? "is-active" : ""}
+                        onClick={() => setAmountMode("pay")}
+                      >
+                        Pay
+                      </button>
+                    </div>
+
+                    <SearchableSelect
+                      id="amount-currency"
+                      label="Amount Currency"
+                      options={portalMockData.transferCurrencies}
+                      value={amountCurrency}
+                      onChange={setAmountCurrency}
+                      placeholder="Search currency"
+                    />
+
+                    <FormRow id="amount" label="Amount">
+                      <input
+                        id="amount"
+                        type="text"
+                        inputMode="decimal"
+                        value={amount}
+                        placeholder="Enter amount"
+                        onChange={(event) => {
+                          const nextValue = event.target.value.replace(/[^\d.,]/g, "");
+                          setAmount(nextValue);
+                        }}
+                        onFocus={() => setAmount((previous) => previous.replace(/,/g, ""))}
+                        onBlur={() => setAmount((previous) => formatAmountInput(previous))}
+                      />
+                    </FormRow>
+                  </div>
+                </div>
+              </PortalCard>
+
+              <PortalCard title="Additional Information">
+                <div className="form-grid">
+                  <FormRow id="value-date" label="Value Date">
+                    <select id="value-date" value={valueDate} onChange={(event) => setValueDate(event.target.value)}>
+                      {portalMockData.valueDateOptions.map((option) => (
                         <option key={option} value={option}>
                           {option}
                         </option>
@@ -244,103 +413,102 @@ export default function App() {
                     </select>
                   </FormRow>
 
-                  {requiresSenderPurposeCode ? (
-                    <FormRow id="sender-purpose-code" label="Sender Purpose Code">
-                      <select id="sender-purpose-code" value={senderPurposeCode} onChange={(event) => setSenderPurposeCode(event.target.value)}>
-                        <option value="">Select code</option>
-                        {portalMockData.senderPurposeCodeOptions.map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))}
-                      </select>
-                    </FormRow>
-                  ) : null}
-                </div>
+                  <FormRow id="remarks" label="Remarks">
+                    <input id="remarks" value={remarks} onChange={(event) => setRemarks(event.target.value)} placeholder="Optional comments" />
+                  </FormRow>
 
-                <div className="amount-control-row">
-                  <div className="mode-toggle" role="group" aria-label="amount mode">
-                    <button
-                      type="button"
-                      className={amountMode === "debit" ? "is-active" : ""}
-                      onClick={() => setAmountMode("debit")}
-                    >
-                      Debit
-                    </button>
-                    <button
-                      type="button"
-                      className={amountMode === "pay" ? "is-active" : ""}
-                      onClick={() => setAmountMode("pay")}
-                    >
-                      Pay
-                    </button>
-                  </div>
-
-                  <SearchableSelect
-                    id="amount-currency"
-                    label="Amount Currency"
-                    options={portalMockData.transferCurrencies}
-                    value={amountCurrency}
-                    onChange={setAmountCurrency}
-                    placeholder="Search currency"
-                  />
-
-                  <FormRow id="amount" label="Amount">
-                    <input
-                      id="amount"
-                      type="text"
-                      inputMode="decimal"
-                      value={amount}
-                      placeholder="Enter amount"
-                      onChange={(event) => {
-                        const nextValue = event.target.value.replace(/[^\d.,]/g, "");
-                        setAmount(nextValue);
-                      }}
-                      onFocus={() => setAmount((previous) => previous.replace(/,/g, ""))}
-                      onBlur={() => setAmount((previous) => formatAmountInput(previous))}
-                    />
+                  <FormRow id="charges-bearer" label="Charges Bearer">
+                    <select id="charges-bearer" value={chargesBearerCode} onChange={(event) => setChargesBearerCode(event.target.value)}>
+                      {portalMockData.chargesBearerOptions.map((option) => (
+                        <option key={option.code} value={option.code}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
                   </FormRow>
                 </div>
+              </PortalCard>
+
+              <div className="page-actions page-actions--right">
+                <button type="button" className="btn btn--primary" onClick={() => setCurrentStep(1)}>
+                  Submit
+                </button>
               </div>
-            </PortalCard>
+            </>
+          }
+          rightColumn={
+            <div className="derived-sections derived-sections--standalone">
+              {rightSections.map((section) => (
+                <DerivedSection key={section.title} title={section.title} rows={section.rows} />
+              ))}
+            </div>
+          }
+        />
+      ) : null}
 
-            <PortalCard title="Additional Information" subtitle="Supplementary fields for enriched payment context.">
-              <div className="form-grid">
-                <FormRow id="value-date" label="Value Date">
-                  <select id="value-date" value={valueDate} onChange={(event) => setValueDate(event.target.value)}>
-                    {portalMockData.valueDateOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                </FormRow>
+      {currentStep === 1 ? (
+        <PageContent
+          leftColumn={
+            <>
+              <PortalCard title="Review Payment Details">
+                <div className="review-layout">
+                  {reviewLeftGroups.map((group) => (
+                    <ReviewList key={group.title} title={group.title} items={group.items} />
+                  ))}
+                </div>
+              </PortalCard>
 
-                <FormRow id="remarks" label="Remarks">
-                  <input id="remarks" value={remarks} onChange={(event) => setRemarks(event.target.value)} placeholder="Optional comments" />
-                </FormRow>
-
-                <FormRow id="charges-bearer" label="Charges Bearer">
-                  <select id="charges-bearer" value={chargesBearerCode} onChange={(event) => setChargesBearerCode(event.target.value)}>
-                    {portalMockData.chargesBearerOptions.map((option) => (
-                      <option key={option.code} value={option.code}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </FormRow>
+              <div className="page-actions">
+                <button type="button" className="btn btn--secondary" onClick={() => setCurrentStep(0)}>
+                  Back
+                </button>
+                <button
+                  type="button"
+                  className="btn btn--primary"
+                  onClick={() => {
+                    setConfirmationReference(DEFAULT_CONFIRMATION_REFERENCE);
+                    setCurrentStep(2);
+                  }}
+                >
+                  Confirm / Submit for Authorization
+                </button>
               </div>
-            </PortalCard>
-          </>
-        }
-        rightColumn={
-          <div className="derived-sections derived-sections--standalone">
-            {rightSections.map((section) => (
-              <DerivedSection key={section.title} title={section.title} rows={section.rows} />
-            ))}
-          </div>
-        }
-      />
+            </>
+          }
+          rightColumn={
+            <div className="derived-sections derived-sections--standalone">
+              {rightSections.map((section) => (
+                <DerivedSection key={section.title} title={section.title} rows={section.rows} />
+              ))}
+            </div>
+          }
+        />
+      ) : null}
+
+      {currentStep === 2 ? (
+        <section className="confirmation-page">
+          <PortalCard title="Payment Submitted Successfully">
+            <div className="confirmation-banner">
+              <p>Your payment has been successfully submitted.</p>
+              <strong>Reference: {confirmationReference}</strong>
+            </div>
+
+            <div className="confirmation-timelines">
+              <Timeline title="Corporate Authorization Steps" steps={corporateTimeline} />
+              <Timeline title="Bank Processing Steps" steps={bankTimeline} />
+            </div>
+
+            <div className="page-actions">
+              <button type="button" className="btn btn--secondary" onClick={resetFlow}>
+                Create Another Payment
+              </button>
+              <button type="button" className="btn btn--primary" onClick={() => setCurrentStep(0)}>
+                Back to Payments
+              </button>
+            </div>
+          </PortalCard>
+        </section>
+      ) : null}
     </AppShell>
   );
 }
