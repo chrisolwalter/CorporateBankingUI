@@ -65,7 +65,8 @@ export default function App() {
   const [language, setLanguage] = useState("English");
 
   const [debitAccountId, setDebitAccountId] = useState(portalMockData.debitAccounts[0].id);
-  const [beneficiaryAccountId, setBeneficiaryAccountId] = useState("");
+  const [beneficiaryId, setBeneficiaryId] = useState("");
+  const [amountMode, setAmountMode] = useState("debit");
   const [amountCurrency, setAmountCurrency] = useState(portalMockData.transferCurrencies[0].id);
   const [amount, setAmount] = useState("");
 
@@ -84,30 +85,26 @@ export default function App() {
     [countryCode]
   );
 
-  const availableLanguages = selectedCountry.languages;
-
   const selectedDebitAccount = useMemo(
     () => portalMockData.debitAccounts.find((account) => account.id === debitAccountId) || portalMockData.debitAccounts[0],
     [debitAccountId]
   );
 
-  useEffect(() => {
-    if (!portalMockData.transferCurrencies.find((currency) => currency.id === amountCurrency)) {
-      setAmountCurrency(selectedDebitAccount.currency);
-    }
-  }, [selectedDebitAccount.currency, amountCurrency]);
-
   const selectedBeneficiary = useMemo(
-    () => portalMockData.beneficiaryAccounts.find((account) => account.id === beneficiaryAccountId) || null,
-    [beneficiaryAccountId]
+    () => portalMockData.beneficiaryAccounts.find((beneficiary) => beneficiary.id === beneficiaryId) || null,
+    [beneficiaryId]
   );
 
   const parsedAmount = parseAmount(amount);
-  const beneficiaryCurrency = selectedBeneficiary?.currency || "—";
-  const fxRate = findFxRate(selectedDebitAccount.currency, amountCurrency, portalMockData.derivedDefaults.fxRates);
+  const debitCurrency = selectedDebitAccount.currency;
+  const payCurrency = amountCurrency;
+  const fxRate = findFxRate(debitCurrency, payCurrency, portalMockData.derivedDefaults.fxRates);
+
+  const debitAmount = amountMode === "debit" ? parsedAmount : parsedAmount / (fxRate || 1);
+  const payAmount = amountMode === "pay" ? parsedAmount : parsedAmount * fxRate;
+
   const estimatedFee = portalMockData.derivedDefaults.estimatedFee;
-  const estimatedBeneficiaryAmount = parsedAmount * fxRate;
-  const totalDebit = parsedAmount + estimatedFee;
+  const totalDebit = debitAmount + estimatedFee;
   const remainingLimit = Math.max(selectedDebitAccount.dailyLimit - totalDebit, 0);
 
   const headerTime = currentTime.toLocaleString("en-US", {
@@ -125,28 +122,24 @@ export default function App() {
     {
       title: "Account & Limits",
       rows: [
-        { label: "Available Balance", value: formatCurrency(selectedDebitAccount.currency, selectedDebitAccount.availableBalance) },
-        { label: "Account Currency", value: selectedDebitAccount.currency },
-        { label: "Daily Transfer Limit", value: formatCurrency(selectedDebitAccount.currency, selectedDebitAccount.dailyLimit) },
-        { label: "Remaining Limit", value: formatCurrency(selectedDebitAccount.currency, remainingLimit) }
+        { label: "Available Balance", value: formatCurrency(debitCurrency, selectedDebitAccount.availableBalance) },
+        { label: "Account Currency", value: debitCurrency },
+        { label: "Daily Transfer Limit", value: formatCurrency(debitCurrency, selectedDebitAccount.dailyLimit) },
+        { label: "Remaining Limit", value: formatCurrency(debitCurrency, remainingLimit) }
       ]
     },
     {
       title: "Charges & FX",
       rows: [
-        { label: "Debit Account Currency", value: selectedDebitAccount.currency },
-        { label: "Transfer Amount Currency", value: amountCurrency },
-        { label: "Beneficiary Currency", value: beneficiaryCurrency },
-        { label: "FX Rate", value: `1 ${selectedDebitAccount.currency} = ${fxRate} ${amountCurrency}` },
-        { label: "Estimated Beneficiary Amount", value: formatCurrency(amountCurrency, estimatedBeneficiaryAmount) },
-        { label: "Estimated Fee", value: formatCurrency(amountCurrency, estimatedFee) },
-        { label: "Charges Bearer", value: chargesBearer }
+        { label: "Debit Amount", value: formatCurrency(debitCurrency, debitAmount) },
+        { label: "Pay Amount", value: formatCurrency(payCurrency, payAmount) },
+        { label: "FX Rate Applied", value: `1 ${debitCurrency} = ${fxRate} ${payCurrency}` }
       ]
     },
     {
       title: "Validation & Status",
       rows: [
-        { label: "Validation Status", value: beneficiaryAccountId ? portalMockData.derivedDefaults.validationStatus : "Pending beneficiary selection" },
+        { label: "Validation Status", value: beneficiaryId ? portalMockData.derivedDefaults.validationStatus : "Pending beneficiary selection" },
         { label: "Cut-off Status", value: portalMockData.derivedDefaults.cutoffStatus, tone: "good" },
         { label: "Value Date", value: valueDate },
         { label: "Payment Purpose", value: paymentPurpose }
@@ -164,7 +157,7 @@ export default function App() {
             currentTime={headerTime}
             language={language}
             country={countryCode}
-            languages={availableLanguages}
+            languages={selectedCountry.languages}
             countries={portalMockData.countries.map((country) => ({ value: country.code, label: country.label }))}
             onLanguageChange={setLanguage}
             onCountryChange={(nextCountryCode) => {
@@ -180,7 +173,7 @@ export default function App() {
         leftColumn={
           <>
             <PortalCard title="Single Payment Details" subtitle="Provide required inputs to initiate transfer.">
-              <div className="form-grid form-grid--mandatory">
+              <div className="form-stack">
                 <SearchableSelect
                   id="debit-account"
                   label="Debit Account"
@@ -191,39 +184,58 @@ export default function App() {
                 />
 
                 <SearchableSelect
-                  id="beneficiary-account"
-                  label="Beneficiary Account"
+                  id="beneficiary"
+                  label="Beneficiary"
                   options={portalMockData.beneficiaryAccounts}
-                  value={beneficiaryAccountId}
-                  onChange={setBeneficiaryAccountId}
-                  placeholder="Search beneficiary account"
+                  value={beneficiaryId}
+                  onChange={setBeneficiaryId}
+                  placeholder="Search beneficiary"
                   noDefault
                 />
 
-                <SearchableSelect
-                  id="amount-currency"
-                  label="Amount Currency"
-                  options={portalMockData.transferCurrencies}
-                  value={amountCurrency}
-                  onChange={setAmountCurrency}
-                  placeholder="Search currency"
-                />
+                <div className="amount-control-row">
+                  <div className="mode-toggle" role="group" aria-label="amount mode">
+                    <button
+                      type="button"
+                      className={amountMode === "debit" ? "is-active" : ""}
+                      onClick={() => setAmountMode("debit")}
+                    >
+                      Debit
+                    </button>
+                    <button
+                      type="button"
+                      className={amountMode === "pay" ? "is-active" : ""}
+                      onClick={() => setAmountMode("pay")}
+                    >
+                      Pay
+                    </button>
+                  </div>
 
-                <FormRow id="amount" label="Amount">
-                  <input
-                    id="amount"
-                    type="text"
-                    inputMode="decimal"
-                    value={amount}
-                    placeholder="Enter amount"
-                    onChange={(event) => {
-                      const nextValue = event.target.value.replace(/[^\d.,]/g, "");
-                      setAmount(nextValue);
-                    }}
-                    onFocus={() => setAmount((previous) => previous.replace(/,/g, ""))}
-                    onBlur={() => setAmount((previous) => formatAmountInput(previous))}
+                  <SearchableSelect
+                    id="amount-currency"
+                    label="Amount Currency"
+                    options={portalMockData.transferCurrencies}
+                    value={amountCurrency}
+                    onChange={setAmountCurrency}
+                    placeholder="Search currency"
                   />
-                </FormRow>
+
+                  <FormRow id="amount" label="Amount">
+                    <input
+                      id="amount"
+                      type="text"
+                      inputMode="decimal"
+                      value={amount}
+                      placeholder="Enter amount"
+                      onChange={(event) => {
+                        const nextValue = event.target.value.replace(/[^\d.,]/g, "");
+                        setAmount(nextValue);
+                      }}
+                      onFocus={() => setAmount((previous) => previous.replace(/,/g, ""))}
+                      onBlur={() => setAmount((previous) => formatAmountInput(previous))}
+                    />
+                  </FormRow>
+                </div>
               </div>
             </PortalCard>
 

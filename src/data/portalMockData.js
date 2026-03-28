@@ -11,9 +11,9 @@ export const portalMockData = {
     { id: "da-003", label: "UK-HQ-120 • GBP • ****0034", currency: "GBP", availableBalance: 389500, dailyLimit: 180000 }
   ],
   beneficiaryAccounts: [
-    { id: "ba-100", label: "Zenith Equipment Ltd • GB99ABCD120039", currency: "GBP" },
-    { id: "ba-101", label: "Nova Industrial GmbH • DE4450010517", currency: "EUR" },
-    { id: "ba-102", label: "Sakura Supplies HK • CN22MIZU000911", currency: "CNY" }
+    { id: "ba-100", label: "Zenith Equipment Ltd • GB99ABCD120039 • United Kingdom", currency: "GBP" },
+    { id: "ba-101", label: "Nova Industrial GmbH • DE4450010517 • Germany", currency: "EUR" },
+    { id: "ba-102", label: "Sakura Supplies KK • JP22MIZU000911 • Japan", currency: "JPY" }
   ],
   transferCurrencies: [
     { id: "USD", label: "USD" },
