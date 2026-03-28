@@ -17,14 +17,100 @@ export const portalMockData = {
     { id: "da-cn-002", countryCode: "CN", label: "CN-HQ-855 • USD • ****6710", currency: "USD", availableBalance: 510000, dailyLimit: 170000 }
   ],
   beneficiaryAccounts: [
-    { id: "ba-fr-100", label: "Paris Metals SARL • FR761245800001 • France", currency: "EUR" },
-    { id: "ba-in-101", label: "Mumbai Logistics Pvt Ltd • IN59HDFC001122 • India", currency: "INR" },
-    { id: "ba-ae-102", label: "Desert Utilities LLC • AE07NBDU884411 • UAE", currency: "AED" },
-    { id: "ba-cn-103", label: "Shanghai Industrial Co • CN22ICBC667788 • China", currency: "CNY" },
-    { id: "ba-uk-104", label: "Zenith Equipment Ltd • GB99ABCD120039 • United Kingdom", currency: "GBP" },
-    { id: "ba-de-105", label: "Nova Industrial GmbH • DE4450010517 • Germany", currency: "EUR" },
-    { id: "ba-jp-106", label: "Sakura Supplies KK • JP22MIZU000911 • Japan", currency: "JPY" },
-    { id: "ba-us-107", label: "Maple Tech Inc • US11CHAS778899 • United States", currency: "USD" }
+    {
+      id: "ba-fr-100",
+      label: "Paris Metals SARL • FR761245800001 • France",
+      name: "Paris Metals SARL",
+      accountNumber: "FR761245800001",
+      country: "France",
+      beneficiaryAddress: "42 Rue de Lyon, Paris, France",
+      bankName: "BNP Paribas Paris",
+      bankAddress: "16 Boulevard des Italiens, Paris, France",
+      currency: "EUR"
+    },
+    {
+      id: "ba-in-101",
+      label: "Mumbai Logistics Pvt Ltd • IN59HDFC001122 • India",
+      name: "Mumbai Logistics Pvt Ltd",
+      accountNumber: "IN59HDFC001122",
+      country: "India",
+      beneficiaryAddress: "12 Andheri East, Mumbai, India",
+      bankName: "HDFC Bank Mumbai",
+      bankAddress: "Trade Centre, BKC, Mumbai, India",
+      currency: "INR"
+    },
+    {
+      id: "ba-ae-102",
+      label: "Desert Utilities LLC • AE07NBDU884411 • UAE",
+      name: "Desert Utilities LLC",
+      accountNumber: "AE07NBDU884411",
+      country: "UAE",
+      beneficiaryAddress: "Sheikh Zayed Road, Dubai, UAE",
+      bankName: "Emirates NBD",
+      bankAddress: "Baniyas Road, Deira, Dubai, UAE",
+      currency: "AED"
+    },
+    {
+      id: "ba-cn-103",
+      label: "Shanghai Industrial Co • CN22ICBC667788 • China",
+      name: "Shanghai Industrial Co",
+      accountNumber: "CN22ICBC667788",
+      country: "China",
+      beneficiaryAddress: "88 Pudong Avenue, Shanghai, China",
+      bankName: "ICBC Shanghai",
+      bankAddress: "55 Lujiazui Ring Rd, Shanghai, China",
+      currency: "CNY"
+    },
+    {
+      id: "ba-uk-104",
+      label: "Zenith Equipment Ltd • GB99ABCD120039 • United Kingdom",
+      name: "Zenith Equipment Ltd",
+      accountNumber: "GB99ABCD120039",
+      country: "United Kingdom",
+      beneficiaryAddress: "10 Bishopsgate, London, UK",
+      bankName: "Barclays Corporate London",
+      bankAddress: "1 Churchill Place, London, UK",
+      currency: "GBP"
+    },
+    {
+      id: "ba-de-105",
+      label: "Nova Industrial GmbH • DE4450010517 • Germany",
+      name: "Nova Industrial GmbH",
+      accountNumber: "DE4450010517",
+      country: "Germany",
+      beneficiaryAddress: "77 Hafenstraße, Hamburg, Germany",
+      bankName: "Deutsche Bank Hamburg",
+      bankAddress: "Adolphsplatz 7, Hamburg, Germany",
+      currency: "EUR"
+    },
+    {
+      id: "ba-jp-106",
+      label: "Sakura Supplies KK • JP22MIZU000911 • Japan",
+      name: "Sakura Supplies KK",
+      accountNumber: "JP22MIZU000911",
+      country: "Japan",
+      beneficiaryAddress: "3-5 Marunouchi, Tokyo, Japan",
+      bankName: "Mizuho Bank Tokyo",
+      bankAddress: "1-1 Otemachi, Tokyo, Japan",
+      currency: "JPY"
+    },
+    {
+      id: "ba-us-107",
+      label: "Maple Tech Inc • US11CHAS778899 • United States",
+      name: "Maple Tech Inc",
+      accountNumber: "US11CHAS778899",
+      country: "United States",
+      beneficiaryAddress: "500 Market St, San Francisco, USA",
+      bankName: "JPMorgan Chase San Francisco",
+      bankAddress: "560 Mission St, San Francisco, USA",
+      currency: "USD"
+    }
+  ],
+  intermediaryBanks: [
+    { id: "ib-001", label: "Standard Chartered London" },
+    { id: "ib-002", label: "JPMorgan New York" },
+    { id: "ib-003", label: "HSBC Hong Kong" },
+    { id: "ib-004", label: "Deutsche Bank Frankfurt" }
   ],
   transferCurrencies: [
     { id: "USD", label: "USD" },

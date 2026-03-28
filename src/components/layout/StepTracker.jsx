@@ -1,4 +1,4 @@
-export function StepTracker({ steps, currentStep, progress = 0 }) {
+export function StepTracker({ steps, currentStep, progress = 0, completed = false }) {
   const clampedProgress = Math.max(0, Math.min(progress, 1));
   const percentage = Math.round(clampedProgress * 100);
 
@@ -8,7 +8,7 @@ export function StepTracker({ steps, currentStep, progress = 0 }) {
       <div className="step-tracker__steps">
         {steps.map((step, index) => {
           const isActive = index === currentStep;
-          const isCompleted = index < currentStep;
+          const isCompleted = completed || index < currentStep;
 
           return (
             <div
@@ -22,7 +22,11 @@ export function StepTracker({ steps, currentStep, progress = 0 }) {
               </div>
               {index < steps.length - 1 ? (
                 <span className="step-tracker__line" aria-hidden="true">
-                  {index === currentStep ? <span className="step-tracker__line-progress" style={{ width: `${percentage}%` }} /> : null}
+                  {index === currentStep ? (
+                    <span className="step-tracker__line-progress" style={{ width: `${percentage}%` }} />
+                  ) : isCompleted ? (
+                    <span className="step-tracker__line-progress" style={{ width: "100%" }} />
+                  ) : null}
                 </span>
               ) : null}
             </div>

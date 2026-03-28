@@ -59,6 +59,32 @@ function findFxRate(baseCurrency, quoteCurrency, fxRates) {
   return 1;
 }
 
+function getDisplayedValueDate(valueDateOption) {
+  const today = new Date();
+  const formatDate = (date) => date.toISOString().slice(0, 10);
+
+  if (valueDateOption === "Today") {
+    return `${formatDate(today)} (Today)`;
+  }
+
+  if (valueDateOption === "Next Business Day") {
+    const nextDay = new Date(today);
+    nextDay.setDate(today.getDate() + 1);
+    return `${formatDate(nextDay)} (Scheduled)`;
+  }
+
+  const customDay = new Date(today);
+  customDay.setDate(today.getDate() + 3);
+  return `${formatDate(customDay)} (Scheduled)`;
+}
+
+function parseEmails(input) {
+  return input
+    .split(/[\n,]+/)
+    .map((email) => email.trim())
+    .filter(Boolean);
+}
+
 function Timeline({ title, steps }) {
   return (
     <section className="timeline-card">
@@ -119,8 +145,13 @@ export default function App() {
   const [amount, setAmount] = useState("");
 
   const [valueDate, setValueDate] = useState("Today");
+  const [intermediaryBankId, setIntermediaryBankId] = useState("");
   const [remarks, setRemarks] = useState("");
   const [chargesBearerCode, setChargesBearerCode] = useState(portalMockData.chargesBearerOptions[0].code);
+  const [beneficiaryAdvice, setBeneficiaryAdvice] = useState("");
+  const [adviceError, setAdviceError] = useState("");
+  const [selectedFiles, setSelectedFiles] = useState([]);
+
   const [confirmationReference, setConfirmationReference] = useState(DEFAULT_CONFIRMATION_REFERENCE);
 
   useEffect(() => {
@@ -153,6 +184,11 @@ export default function App() {
   const selectedBeneficiary = useMemo(
     () => portalMockData.beneficiaryAccounts.find((beneficiary) => beneficiary.id === beneficiaryId) || null,
     [beneficiaryId]
+  );
+
+  const selectedIntermediaryBank = useMemo(
+    () => portalMockData.intermediaryBanks.find((bank) => bank.id === intermediaryBankId) || null,
+    [intermediaryBankId]
   );
 
   const requiresSenderPurposeCode = selectedDebitAccount ? ["AE", "IN"].includes(selectedDebitAccount.countryCode) : false;
@@ -224,15 +260,26 @@ export default function App() {
       rows: [
         { label: "Validation Status", value: beneficiaryId ? portalMockData.derivedDefaults.validationStatus : "Pending beneficiary selection" },
         { label: "Cut-off Status", value: portalMockData.derivedDefaults.cutoffStatus, tone: "good" },
-        { label: "Value Date", value: valueDate === "Today" ? "Today" : "Scheduled" },
+        { label: "Value Date", value: getDisplayedValueDate(valueDate) },
         { label: "Charges Bearer", value: chargesBearerSelection?.code || chargesBearerCode }
+      ]
+    },
+    {
+      title: "Beneficiary Details",
+      rows: [
+        { label: "Beneficiary Name", value: selectedBeneficiary?.name || "—" },
+        { label: "Beneficiary Account Number / IBAN", value: selectedBeneficiary?.accountNumber || "—" },
+        { label: "Beneficiary Country", value: selectedBeneficiary?.country || "—" },
+        { label: "Beneficiary Bank Name", value: selectedBeneficiary?.bankName || "—" },
+        { label: "Beneficiary Bank Address", value: selectedBeneficiary?.bankAddress || "—" },
+        { label: "Beneficiary Address", value: selectedBeneficiary?.beneficiaryAddress || "—" }
       ]
     }
   ];
 
   const reviewLeftGroups = [
     {
-      title: "Payment Inputs",
+      title: "Payment Details Entered",
       items: [
         { label: "Debit Account", value: selectedDebitAccount?.label || "—" },
         { label: "Beneficiary", value: selectedBeneficiary?.label || "—" },
@@ -246,9 +293,23 @@ export default function App() {
     {
       title: "Additional Information",
       items: [
-        { label: "Value Date", value: valueDate },
-        { label: "Remarks", value: remarks || "—" },
-        { label: "Charges Bearer", value: chargesBearerSelection?.label || chargesBearerCode }
+        { label: "Value Date", value: getDisplayedValueDate(valueDate) },
+        { label: "Intermediary Bank", value: selectedIntermediaryBank?.label || "—" },
+        { label: "Charges Bearer", value: chargesBearerSelection?.label || chargesBearerCode },
+        { label: "Uploaded Documents", value: selectedFiles.length ? selectedFiles.join(", ") : "—" },
+        { label: "Beneficiary Advice Emails", value: beneficiaryAdvice || "—" },
+        { label: "Remarks", value: remarks || "—" }
+      ]
+    },
+    {
+      title: "Beneficiary & Bank Details",
+      items: [
+        { label: "Beneficiary Name", value: selectedBeneficiary?.name || "—" },
+        { label: "Beneficiary Account", value: selectedBeneficiary?.accountNumber || "—" },
+        { label: "Beneficiary Country", value: selectedBeneficiary?.country || "—" },
+        { label: "Beneficiary Address", value: selectedBeneficiary?.beneficiaryAddress || "—" },
+        { label: "Beneficiary Bank Name", value: selectedBeneficiary?.bankName || "—" },
+        { label: "Beneficiary Bank Address", value: selectedBeneficiary?.bankAddress || "—" }
       ]
     }
   ];
@@ -277,8 +338,12 @@ export default function App() {
     setAmountCurrency(portalMockData.transferCurrencies[0].id);
     setAmount("");
     setValueDate("Today");
+    setIntermediaryBankId("");
     setRemarks("");
     setChargesBearerCode(portalMockData.chargesBearerOptions[0].code);
+    setBeneficiaryAdvice("");
+    setAdviceError("");
+    setSelectedFiles([]);
     setConfirmationReference(DEFAULT_CONFIRMATION_REFERENCE);
   };
 
@@ -301,7 +366,7 @@ export default function App() {
               setLanguage("English");
             }}
           />
-          <StepTracker steps={["Initiate", "Review", "Confirmation"]} currentStep={currentStep} progress={stepProgress} />
+          <StepTracker steps={["Initiate", "Review", "Confirmation"]} currentStep={currentStep} progress={stepProgress} completed={currentStep === 2} />
         </>
       }
     >
@@ -413,9 +478,15 @@ export default function App() {
                     </select>
                   </FormRow>
 
-                  <FormRow id="remarks" label="Remarks">
-                    <input id="remarks" value={remarks} onChange={(event) => setRemarks(event.target.value)} placeholder="Optional comments" />
-                  </FormRow>
+                  <SearchableSelect
+                    id="intermediary-bank"
+                    label="Intermediary Bank"
+                    options={portalMockData.intermediaryBanks}
+                    value={intermediaryBankId}
+                    onChange={setIntermediaryBankId}
+                    placeholder="Select intermediary bank"
+                    noDefault
+                  />
 
                   <FormRow id="charges-bearer" label="Charges Bearer">
                     <select id="charges-bearer" value={chargesBearerCode} onChange={(event) => setChargesBearerCode(event.target.value)}>
@@ -425,6 +496,43 @@ export default function App() {
                         </option>
                       ))}
                     </select>
+                  </FormRow>
+
+                  <FormRow id="supporting-documents" label="Upload Supporting Documents">
+                    <input
+                      id="supporting-documents"
+                      type="file"
+                      multiple
+                      onChange={(event) => {
+                        const files = Array.from(event.target.files || []).map((file) => file.name);
+                        setSelectedFiles(files);
+                      }}
+                    />
+                    {selectedFiles.length ? <p className="inline-note">{selectedFiles.join(", ")}</p> : null}
+                  </FormRow>
+
+                  <FormRow id="beneficiary-advice" label="Beneficiary Advice Emails">
+                    <textarea
+                      id="beneficiary-advice"
+                      rows={3}
+                      placeholder="Enter up to 5 emails, separated by commas or new lines"
+                      value={beneficiaryAdvice}
+                      onChange={(event) => {
+                        const nextValue = event.target.value;
+                        const emails = parseEmails(nextValue);
+                        if (emails.length > 5) {
+                          setAdviceError("You can enter up to 5 email addresses.");
+                        } else {
+                          setAdviceError("");
+                        }
+                        setBeneficiaryAdvice(nextValue);
+                      }}
+                    />
+                    {adviceError ? <p className="inline-error">{adviceError}</p> : null}
+                  </FormRow>
+
+                  <FormRow id="remarks" label="Remarks">
+                    <input id="remarks" value={remarks} onChange={(event) => setRemarks(event.target.value)} placeholder="Optional comments" />
                   </FormRow>
                 </div>
               </PortalCard>
@@ -502,7 +610,7 @@ export default function App() {
               <button type="button" className="btn btn--secondary" onClick={resetFlow}>
                 Create Another Payment
               </button>
-              <button type="button" className="btn btn--primary" onClick={() => setCurrentStep(0)}>
+              <button type="button" className="btn btn--primary" onClick={resetFlow}>
                 Back to Payments
               </button>
             </div>
