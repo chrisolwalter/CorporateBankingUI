@@ -6,6 +6,7 @@ import { PageContent } from "./components/layout/PageContent";
 import { PortalCard } from "./components/cards/PortalCard";
 import { DerivedSection } from "./components/cards/DerivedSection";
 import { FormRow } from "./components/fields/FormRow";
+import { SearchableSelect } from "./components/fields/SearchableSelect";
 import { portalMockData } from "./data/portalMockData";
 import "./styles/portalLayout.css";
 
@@ -23,12 +24,15 @@ export default function App() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [language, setLanguage] = useState(portalMockData.languages[0]);
   const [country, setCountry] = useState(portalMockData.countries[0]);
+
   const [debitAccountId, setDebitAccountId] = useState(portalMockData.debitAccounts[0].id);
-  const [beneficiaryAccountId, setBeneficiaryAccountId] = useState(portalMockData.beneficiaryAccounts[0].id);
-  const [amount, setAmount] = useState("48500");
+  const [beneficiaryAccountId, setBeneficiaryAccountId] = useState("");
+  const [amountCurrency, setAmountCurrency] = useState(portalMockData.debitAccounts[0].currency);
+  const [amount, setAmount] = useState("");
+
   const [valueDate, setValueDate] = useState(portalMockData.valueDateOptions[1]);
   const [paymentPurpose, setPaymentPurpose] = useState(portalMockData.paymentPurposeOptions[0]);
-  const [remarks, setRemarks] = useState("March vendor settlement");
+  const [remarks, setRemarks] = useState("");
   const [chargesBearer, setChargesBearer] = useState(portalMockData.chargesBearerOptions[0]);
 
   useEffect(() => {
@@ -41,15 +45,23 @@ export default function App() {
     [debitAccountId]
   );
 
+  useEffect(() => {
+    setAmountCurrency(selectedDebitAccount.currency);
+  }, [selectedDebitAccount.currency]);
+
   const selectedBeneficiary = useMemo(
-    () =>
-      portalMockData.beneficiaryAccounts.find((account) => account.id === beneficiaryAccountId) ||
-      portalMockData.beneficiaryAccounts[0],
+    () => portalMockData.beneficiaryAccounts.find((account) => account.id === beneficiaryAccountId) || null,
     [beneficiaryAccountId]
   );
 
+  const currencyOptions = useMemo(
+    () => [...new Set(portalMockData.debitAccounts.map((account) => account.currency))],
+    []
+  );
+
   const parsedAmount = Number.parseFloat(amount) || 0;
-  const fxPair = `${selectedDebitAccount.currency}-${selectedBeneficiary.currency}`;
+  const beneficiaryCurrency = selectedBeneficiary?.currency || "—";
+  const fxPair = `${amountCurrency}-${selectedBeneficiary?.currency || amountCurrency}`;
   const fxRate = portalMockData.derivedDefaults.fxRates[fxPair] ?? 1;
   const estimatedFee = portalMockData.derivedDefaults.estimatedFee;
   const estimatedBeneficiaryAmount = parsedAmount * fxRate;
@@ -80,18 +92,18 @@ export default function App() {
     {
       title: "Charges & FX",
       rows: [
-        { label: "Debit Currency", value: selectedDebitAccount.currency },
-        { label: "Beneficiary Currency", value: selectedBeneficiary.currency },
-        { label: "FX Rate", value: `1 ${selectedDebitAccount.currency} = ${fxRate} ${selectedBeneficiary.currency}` },
-        { label: "Estimated Beneficiary Amount", value: formatCurrency(selectedBeneficiary.currency, estimatedBeneficiaryAmount) },
-        { label: "Estimated Fee", value: formatCurrency(selectedDebitAccount.currency, estimatedFee) },
+        { label: "Amount Currency", value: amountCurrency },
+        { label: "Beneficiary Currency", value: beneficiaryCurrency },
+        { label: "FX Rate", value: `1 ${amountCurrency} = ${fxRate} ${beneficiaryCurrency}` },
+        { label: "Estimated Beneficiary Amount", value: formatCurrency(selectedBeneficiary?.currency || amountCurrency, estimatedBeneficiaryAmount) },
+        { label: "Estimated Fee", value: formatCurrency(amountCurrency, estimatedFee) },
         { label: "Charges Bearer", value: chargesBearer }
       ]
     },
     {
       title: "Validation & Status",
       rows: [
-        { label: "Validation Status", value: portalMockData.derivedDefaults.validationStatus, tone: "good" },
+        { label: "Validation Status", value: beneficiaryAccountId ? portalMockData.derivedDefaults.validationStatus : "Pending beneficiary selection" },
         { label: "Cut-off Status", value: portalMockData.derivedDefaults.cutoffStatus, tone: "good" },
         { label: "Value Date", value: valueDate },
         { label: "Payment Purpose", value: paymentPurpose }
@@ -100,8 +112,8 @@ export default function App() {
     {
       title: "Final Summary",
       rows: [
-        { label: "Transfer Amount", value: formatCurrency(selectedDebitAccount.currency, parsedAmount) },
-        { label: "Total Debit", value: formatCurrency(selectedDebitAccount.currency, totalDebit), tone: "strong" },
+        { label: "Transfer Amount", value: formatCurrency(amountCurrency, parsedAmount) },
+        { label: "Total Debit", value: formatCurrency(amountCurrency, totalDebit), tone: "strong" },
         { label: "Remarks", value: remarks || "—" }
       ]
     }
@@ -127,26 +139,31 @@ export default function App() {
         leftColumn={
           <>
             <PortalCard title="Mandatory Fields" subtitle="Provide required inputs to initiate transfer.">
-              <div className="form-grid">
-                <FormRow id="debit-account" label="Debit Account">
-                  <select id="debit-account" value={debitAccountId} onChange={(event) => setDebitAccountId(event.target.value)}>
-                    {portalMockData.debitAccounts.map((account) => (
-                      <option key={account.id} value={account.id}>
-                        {account.label}
-                      </option>
-                    ))}
-                  </select>
-                </FormRow>
+              <div className="form-grid form-grid--mandatory">
+                <SearchableSelect
+                  id="debit-account"
+                  label="Debit Account"
+                  options={portalMockData.debitAccounts}
+                  value={debitAccountId}
+                  onChange={setDebitAccountId}
+                  placeholder="Search debit account"
+                />
 
-                <FormRow id="beneficiary-account" label="Beneficiary Account">
-                  <select
-                    id="beneficiary-account"
-                    value={beneficiaryAccountId}
-                    onChange={(event) => setBeneficiaryAccountId(event.target.value)}
-                  >
-                    {portalMockData.beneficiaryAccounts.map((account) => (
-                      <option key={account.id} value={account.id}>
-                        {account.label}
+                <SearchableSelect
+                  id="beneficiary-account"
+                  label="Beneficiary Account"
+                  options={portalMockData.beneficiaryAccounts}
+                  value={beneficiaryAccountId}
+                  onChange={setBeneficiaryAccountId}
+                  placeholder="Search beneficiary account"
+                  noDefault
+                />
+
+                <FormRow id="amount-currency" label="Amount Currency">
+                  <select id="amount-currency" value={amountCurrency} onChange={(event) => setAmountCurrency(event.target.value)}>
+                    {currencyOptions.map((currency) => (
+                      <option key={currency} value={currency}>
+                        {currency}
                       </option>
                     ))}
                   </select>
@@ -160,6 +177,7 @@ export default function App() {
                     step="0.01"
                     inputMode="decimal"
                     value={amount}
+                    placeholder="Enter amount"
                     onChange={(event) => setAmount(event.target.value)}
                   />
                 </FormRow>
@@ -189,7 +207,7 @@ export default function App() {
                 </FormRow>
 
                 <FormRow id="remarks" label="Remarks">
-                  <input id="remarks" value={remarks} onChange={(event) => setRemarks(event.target.value)} />
+                  <input id="remarks" value={remarks} onChange={(event) => setRemarks(event.target.value)} placeholder="Optional comments" />
                 </FormRow>
 
                 <FormRow id="charges-bearer" label="Charges Bearer">
