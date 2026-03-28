@@ -26,8 +26,8 @@ export function Header({ portalTitle, currentTime, language, country, languages,
           <span>Country</span>
           <select value={country} onChange={(event) => onCountryChange(event.target.value)}>
             {countries.map((option) => (
-              <option key={option} value={option}>
-                {option}
+              <option key={option.value} value={option.value}>
+                {option.label}
               </option>
             ))}
           </select>

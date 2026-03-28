@@ -38,15 +38,35 @@ function formatAmountInput(value) {
   }).format(parsed);
 }
 
+function findFxRate(baseCurrency, quoteCurrency, fxRates) {
+  if (!baseCurrency || !quoteCurrency || baseCurrency === quoteCurrency) {
+    return 1;
+  }
+
+  const directPair = `${baseCurrency}-${quoteCurrency}`;
+  const reversePair = `${quoteCurrency}-${baseCurrency}`;
+
+  if (fxRates[directPair]) {
+    return fxRates[directPair];
+  }
+
+  if (fxRates[reversePair]) {
+    return Number((1 / fxRates[reversePair]).toFixed(6));
+  }
+
+  return 1;
+}
+
 export default function App() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [language, setLanguage] = useState(portalMockData.languages[0]);
-  const [country, setCountry] = useState(portalMockData.countries[0]);
+
+  const [countryCode, setCountryCode] = useState(portalMockData.countries[0].code);
+  const [language, setLanguage] = useState("English");
 
   const [debitAccountId, setDebitAccountId] = useState(portalMockData.debitAccounts[0].id);
   const [beneficiaryAccountId, setBeneficiaryAccountId] = useState("");
-  const [amountCurrency, setAmountCurrency] = useState(portalMockData.debitAccounts[0].currency);
+  const [amountCurrency, setAmountCurrency] = useState(portalMockData.transferCurrencies[0].id);
   const [amount, setAmount] = useState("");
 
   const [valueDate, setValueDate] = useState(portalMockData.valueDateOptions[1]);
@@ -59,29 +79,32 @@ export default function App() {
     return () => clearInterval(timerId);
   }, []);
 
+  const selectedCountry = useMemo(
+    () => portalMockData.countries.find((country) => country.code === countryCode) || portalMockData.countries[0],
+    [countryCode]
+  );
+
+  const availableLanguages = selectedCountry.languages;
+
   const selectedDebitAccount = useMemo(
     () => portalMockData.debitAccounts.find((account) => account.id === debitAccountId) || portalMockData.debitAccounts[0],
     [debitAccountId]
   );
 
   useEffect(() => {
-    setAmountCurrency(selectedDebitAccount.currency);
-  }, [selectedDebitAccount.currency]);
+    if (!portalMockData.transferCurrencies.find((currency) => currency.id === amountCurrency)) {
+      setAmountCurrency(selectedDebitAccount.currency);
+    }
+  }, [selectedDebitAccount.currency, amountCurrency]);
 
   const selectedBeneficiary = useMemo(
     () => portalMockData.beneficiaryAccounts.find((account) => account.id === beneficiaryAccountId) || null,
     [beneficiaryAccountId]
   );
 
-  const currencyOptions = useMemo(
-    () => [...new Set(portalMockData.debitAccounts.map((account) => account.currency))].map((currency) => ({ id: currency, label: currency })),
-    []
-  );
-
   const parsedAmount = parseAmount(amount);
   const beneficiaryCurrency = selectedBeneficiary?.currency || "—";
-  const fxPair = `${amountCurrency}-${selectedBeneficiary?.currency || amountCurrency}`;
-  const fxRate = portalMockData.derivedDefaults.fxRates[fxPair] ?? 1;
+  const fxRate = findFxRate(selectedDebitAccount.currency, amountCurrency, portalMockData.derivedDefaults.fxRates);
   const estimatedFee = portalMockData.derivedDefaults.estimatedFee;
   const estimatedBeneficiaryAmount = parsedAmount * fxRate;
   const totalDebit = parsedAmount + estimatedFee;
@@ -98,7 +121,7 @@ export default function App() {
     timeZoneName: "short"
   });
 
-  const derivedGroups = [
+  const rightSections = [
     {
       title: "Account & Limits",
       rows: [
@@ -111,10 +134,11 @@ export default function App() {
     {
       title: "Charges & FX",
       rows: [
-        { label: "Amount Currency", value: amountCurrency },
+        { label: "Debit Account Currency", value: selectedDebitAccount.currency },
+        { label: "Transfer Amount Currency", value: amountCurrency },
         { label: "Beneficiary Currency", value: beneficiaryCurrency },
-        { label: "FX Rate", value: `1 ${amountCurrency} = ${fxRate} ${beneficiaryCurrency}` },
-        { label: "Estimated Beneficiary Amount", value: formatCurrency(selectedBeneficiary?.currency || amountCurrency, estimatedBeneficiaryAmount) },
+        { label: "FX Rate", value: `1 ${selectedDebitAccount.currency} = ${fxRate} ${amountCurrency}` },
+        { label: "Estimated Beneficiary Amount", value: formatCurrency(amountCurrency, estimatedBeneficiaryAmount) },
         { label: "Estimated Fee", value: formatCurrency(amountCurrency, estimatedFee) },
         { label: "Charges Bearer", value: chargesBearer }
       ]
@@ -126,14 +150,6 @@ export default function App() {
         { label: "Cut-off Status", value: portalMockData.derivedDefaults.cutoffStatus, tone: "good" },
         { label: "Value Date", value: valueDate },
         { label: "Payment Purpose", value: paymentPurpose }
-      ]
-    },
-    {
-      title: "Final Summary",
-      rows: [
-        { label: "Transfer Amount", value: formatCurrency(amountCurrency, parsedAmount) },
-        { label: "Total Debit", value: formatCurrency(amountCurrency, totalDebit), tone: "strong" },
-        { label: "Remarks", value: remarks || "—" }
       ]
     }
   ];
@@ -147,11 +163,14 @@ export default function App() {
             portalTitle="Corporate Banking Payment Services"
             currentTime={headerTime}
             language={language}
-            country={country}
-            languages={portalMockData.languages}
-            countries={portalMockData.countries}
+            country={countryCode}
+            languages={availableLanguages}
+            countries={portalMockData.countries.map((country) => ({ value: country.code, label: country.label }))}
             onLanguageChange={setLanguage}
-            onCountryChange={setCountry}
+            onCountryChange={(nextCountryCode) => {
+              setCountryCode(nextCountryCode);
+              setLanguage("English");
+            }}
           />
           <StepTracker steps={["Initiate", "Review", "Confirmation"]} currentStep={0} />
         </>
@@ -184,7 +203,7 @@ export default function App() {
                 <SearchableSelect
                   id="amount-currency"
                   label="Amount Currency"
-                  options={currencyOptions}
+                  options={portalMockData.transferCurrencies}
                   value={amountCurrency}
                   onChange={setAmountCurrency}
                   placeholder="Search currency"
@@ -248,13 +267,11 @@ export default function App() {
           </>
         }
         rightColumn={
-          <PortalCard title="Derived Fields" subtitle="Read-only system-computed insights and status.">
-            <div className="derived-sections">
-              {derivedGroups.map((group) => (
-                <DerivedSection key={group.title} title={group.title} rows={group.rows} />
-              ))}
-            </div>
-          </PortalCard>
+          <div className="derived-sections derived-sections--standalone">
+            {rightSections.map((section) => (
+              <DerivedSection key={section.title} title={section.title} rows={section.rows} />
+            ))}
+          </div>
         }
       />
     </AppShell>

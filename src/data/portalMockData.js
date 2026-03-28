@@ -1,27 +1,48 @@
 export const portalMockData = {
-  languages: ["English", "Spanish", "French", "German"],
-  countries: ["United States", "United Kingdom", "Singapore", "United Arab Emirates"],
+  countries: [
+    { code: "FR", label: "France 🇫🇷", languages: ["English", "French"] },
+    { code: "IN", label: "India 🇮🇳", languages: ["English", "Hindi"] },
+    { code: "AE", label: "UAE 🇦🇪", languages: ["English", "Arabic"] },
+    { code: "CN", label: "China 🇨🇳", languages: ["English"] }
+  ],
   debitAccounts: [
     { id: "da-001", label: "US-OPS-001 • USD • ****3456", currency: "USD", availableBalance: 1240000, dailyLimit: 300000 },
-    { id: "da-002", label: "US-TRE-883 • USD • ****7781", currency: "USD", availableBalance: 572100, dailyLimit: 200000 },
-    { id: "da-003", label: "EU-HQ-120 • EUR • ****0034", currency: "EUR", availableBalance: 389500, dailyLimit: 180000 }
+    { id: "da-002", label: "EU-TRE-883 • EUR • ****7781", currency: "EUR", availableBalance: 572100, dailyLimit: 200000 },
+    { id: "da-003", label: "UK-HQ-120 • GBP • ****0034", currency: "GBP", availableBalance: 389500, dailyLimit: 180000 }
   ],
   beneficiaryAccounts: [
     { id: "ba-100", label: "Zenith Equipment Ltd • GB99ABCD120039", currency: "GBP" },
     { id: "ba-101", label: "Nova Industrial GmbH • DE4450010517", currency: "EUR" },
-    { id: "ba-102", label: "Sakura Supplies KK • JP22MIZU000911", currency: "JPY" }
+    { id: "ba-102", label: "Sakura Supplies HK • CN22MIZU000911", currency: "CNY" }
+  ],
+  transferCurrencies: [
+    { id: "USD", label: "USD" },
+    { id: "EUR", label: "EUR" },
+    { id: "GBP", label: "GBP" },
+    { id: "AED", label: "AED" },
+    { id: "CNY", label: "CNY (Chinese Yuan)" },
+    { id: "INR", label: "INR" }
   ],
   valueDateOptions: ["Today", "Next Business Day", "Custom Date"],
   paymentPurposeOptions: ["Vendor Payment", "Payroll", "Intercompany", "Tax Settlement"],
   chargesBearerOptions: ["SHA", "OUR", "BEN"],
   derivedDefaults: {
     fxRates: {
-      "USD-GBP": 0.78,
       "USD-EUR": 0.92,
-      "USD-JPY": 148.2,
+      "USD-GBP": 0.78,
+      "USD-AED": 3.67,
+      "USD-CNY": 7.21,
+      "USD-INR": 83.1,
       "EUR-GBP": 0.85,
-      "EUR-EUR": 1,
-      "EUR-JPY": 161.7
+      "EUR-AED": 3.99,
+      "EUR-CNY": 7.84,
+      "EUR-INR": 90.2,
+      "GBP-AED": 4.68,
+      "GBP-CNY": 9.21,
+      "GBP-INR": 105.8,
+      "AED-CNY": 1.96,
+      "AED-INR": 22.6,
+      "CNY-INR": 11.5
     },
     estimatedFee: 32.5,
     validationStatus: "Ready for authorization",
