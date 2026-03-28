@@ -13,6 +13,20 @@ import "./styles/portalLayout.css";
 
 const DEFAULT_CONFIRMATION_REFERENCE = "CBPS-20260328-104582";
 
+const getTodayDateString = (date = new Date()) => date.toISOString().slice(0, 10);
+
+function nextBusinessDate(date) {
+  const next = new Date(date);
+  do {
+    next.setDate(next.getDate() + 1);
+  } while ([0, 6].includes(next.getDay()));
+  return next;
+}
+
+function defaultValueDateByCutoff(date = new Date()) {
+  return date.getHours() >= 16 ? "Next Business Day" : "Today";
+}
+
 function formatCurrency(currency, amount) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -59,30 +73,31 @@ function findFxRate(baseCurrency, quoteCurrency, fxRates) {
   return 1;
 }
 
-function getDisplayedValueDate(valueDateOption) {
-  const today = new Date();
-  const formatDate = (date) => date.toISOString().slice(0, 10);
-
-  if (valueDateOption === "Today") {
-    return `${formatDate(today)} (Today)`;
-  }
-
-  if (valueDateOption === "Next Business Day") {
-    const nextDay = new Date(today);
-    nextDay.setDate(today.getDate() + 1);
-    return `${formatDate(nextDay)} (Scheduled)`;
-  }
-
-  const customDay = new Date(today);
-  customDay.setDate(today.getDate() + 3);
-  return `${formatDate(customDay)} (Scheduled)`;
-}
-
 function parseEmails(input) {
   return input
     .split(/[\n,]+/)
     .map((email) => email.trim())
     .filter(Boolean);
+}
+
+function getBeneficiaryRoutingRows(beneficiary) {
+  if (!beneficiary) {
+    return [];
+  }
+
+  const rows = [{ label: "Beneficiary Bank SWIFT Code", value: beneficiary.swiftCode || "—" }];
+
+  if (beneficiary.country === "India") {
+    rows.push({ label: "IFSC Code", value: beneficiary.ifscCode || "—" });
+  } else if (beneficiary.country === "United Kingdom") {
+    rows.push({ label: "Sort Code", value: beneficiary.sortCode || "—" });
+  } else if (beneficiary.country === "United States") {
+    rows.push({ label: "Fedwire Code", value: beneficiary.fedwireCode || "—" });
+  } else if (beneficiary.country === "UAE") {
+    rows.push({ label: "UAE Routing Code", value: beneficiary.uaeRoutingCode || "—" });
+  }
+
+  return rows;
 }
 
 function Timeline({ title, steps }) {
@@ -144,7 +159,8 @@ export default function App() {
   const [amountCurrency, setAmountCurrency] = useState(portalMockData.transferCurrencies[0].id);
   const [amount, setAmount] = useState("");
 
-  const [valueDate, setValueDate] = useState("Today");
+  const [valueDate, setValueDate] = useState(defaultValueDateByCutoff());
+  const [customerDate, setCustomerDate] = useState(getTodayDateString(nextBusinessDate(new Date())));
   const [intermediaryBankId, setIntermediaryBankId] = useState("");
   const [remarks, setRemarks] = useState("");
   const [chargesBearerCode, setChargesBearerCode] = useState(portalMockData.chargesBearerOptions[0].code);
@@ -199,6 +215,32 @@ export default function App() {
     }
   }, [requiresSenderPurposeCode]);
 
+  const isCutoffPassed = currentTime.getHours() >= 16;
+  const todayDate = getTodayDateString(currentTime);
+  const nextBizDate = getTodayDateString(nextBusinessDate(currentTime));
+
+  const debitValueDate =
+    valueDate === "Today"
+      ? todayDate
+      : valueDate === "Next Business Day"
+      ? nextBizDate
+      : customerDate;
+
+  const creditDateRolled =
+    (valueDate === "Today" && isCutoffPassed) ||
+    (valueDate === "Customer Date" && isCutoffPassed && customerDate === todayDate);
+
+  const creditValueDate =
+    valueDate === "Today"
+      ? isCutoffPassed
+        ? nextBizDate
+        : todayDate
+      : valueDate === "Next Business Day"
+      ? nextBizDate
+      : creditDateRolled
+      ? nextBizDate
+      : customerDate;
+
   const parsedAmount = parseAmount(amount);
   const debitCurrency = selectedDebitAccount?.currency || "USD";
   const payCurrency = amountCurrency;
@@ -238,6 +280,8 @@ export default function App() {
     timeZoneName: "short"
   });
 
+  const beneficiaryRoutingRows = getBeneficiaryRoutingRows(selectedBeneficiary);
+
   const rightSections = [
     {
       title: "Account & Limits",
@@ -259,9 +303,12 @@ export default function App() {
       title: "Validation & Status",
       rows: [
         { label: "Validation Status", value: beneficiaryId ? portalMockData.derivedDefaults.validationStatus : "Pending beneficiary selection" },
-        { label: "Cut-off Status", value: portalMockData.derivedDefaults.cutoffStatus, tone: "good" },
-        { label: "Value Date", value: getDisplayedValueDate(valueDate) },
-        { label: "Charges Bearer", value: chargesBearerSelection?.code || chargesBearerCode }
+        { label: "Cut-off Status", value: isCutoffPassed ? "Cut-off passed" : "Within cut-off", tone: isCutoffPassed ? "default" : "good" },
+        { label: "Debit Value Date", value: debitValueDate },
+        {
+          label: "Credit Value Date",
+          value: creditDateRolled ? `${creditValueDate} (rolled to next business day)` : creditValueDate
+        }
       ]
     },
     {
@@ -272,6 +319,7 @@ export default function App() {
         { label: "Beneficiary Country", value: selectedBeneficiary?.country || "—" },
         { label: "Beneficiary Bank Name", value: selectedBeneficiary?.bankName || "—" },
         { label: "Beneficiary Bank Address", value: selectedBeneficiary?.bankAddress || "—" },
+        ...beneficiaryRoutingRows,
         { label: "Beneficiary Address", value: selectedBeneficiary?.beneficiaryAddress || "—" }
       ]
     }
@@ -293,7 +341,10 @@ export default function App() {
     {
       title: "Additional Information",
       items: [
-        { label: "Value Date", value: getDisplayedValueDate(valueDate) },
+        { label: "Value Date Option", value: valueDate },
+        { label: "Customer Date", value: valueDate === "Customer Date" ? customerDate : "Not selected" },
+        { label: "Debit Value Date", value: debitValueDate },
+        { label: "Credit Value Date", value: creditDateRolled ? `${creditValueDate} (rolled)` : creditValueDate },
         { label: "Intermediary Bank", value: selectedIntermediaryBank?.label || "—" },
         { label: "Charges Bearer", value: chargesBearerSelection?.label || chargesBearerCode },
         { label: "Uploaded Documents", value: selectedFiles.length ? selectedFiles.join(", ") : "—" },
@@ -309,7 +360,9 @@ export default function App() {
         { label: "Beneficiary Country", value: selectedBeneficiary?.country || "—" },
         { label: "Beneficiary Address", value: selectedBeneficiary?.beneficiaryAddress || "—" },
         { label: "Beneficiary Bank Name", value: selectedBeneficiary?.bankName || "—" },
-        { label: "Beneficiary Bank Address", value: selectedBeneficiary?.bankAddress || "—" }
+        { label: "Beneficiary Bank Address", value: selectedBeneficiary?.bankAddress || "—" },
+        { label: "SWIFT Code", value: selectedBeneficiary?.swiftCode || "—" },
+        ...beneficiaryRoutingRows
       ]
     }
   ];
@@ -337,7 +390,8 @@ export default function App() {
     setAmountMode("debit");
     setAmountCurrency(portalMockData.transferCurrencies[0].id);
     setAmount("");
-    setValueDate("Today");
+    setValueDate(defaultValueDateByCutoff());
+    setCustomerDate(getTodayDateString(nextBusinessDate(new Date())));
     setIntermediaryBankId("");
     setRemarks("");
     setChargesBearerCode(portalMockData.chargesBearerOptions[0].code);
@@ -478,6 +532,12 @@ export default function App() {
                     </select>
                   </FormRow>
 
+                  {valueDate === "Customer Date" ? (
+                    <FormRow id="customer-date" label="Customer Date">
+                      <input id="customer-date" type="date" value={customerDate} onChange={(event) => setCustomerDate(event.target.value)} />
+                    </FormRow>
+                  ) : null}
+
                   <SearchableSelect
                     id="intermediary-bank"
                     label="Intermediary Bank"
@@ -532,7 +592,13 @@ export default function App() {
                   </FormRow>
 
                   <FormRow id="remarks" label="Remarks">
-                    <input id="remarks" value={remarks} onChange={(event) => setRemarks(event.target.value)} placeholder="Optional comments" />
+                    <textarea
+                      id="remarks"
+                      rows={3}
+                      value={remarks}
+                      onChange={(event) => setRemarks(event.target.value)}
+                      placeholder="Optional multi-line comments"
+                    />
                   </FormRow>
                 </div>
               </PortalCard>

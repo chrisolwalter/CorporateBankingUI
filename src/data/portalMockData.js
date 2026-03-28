@@ -26,6 +26,7 @@ export const portalMockData = {
       beneficiaryAddress: "42 Rue de Lyon, Paris, France",
       bankName: "BNP Paribas Paris",
       bankAddress: "16 Boulevard des Italiens, Paris, France",
+      swiftCode: "BNPAFRPP",
       currency: "EUR"
     },
     {
@@ -37,6 +38,8 @@ export const portalMockData = {
       beneficiaryAddress: "12 Andheri East, Mumbai, India",
       bankName: "HDFC Bank Mumbai",
       bankAddress: "Trade Centre, BKC, Mumbai, India",
+      swiftCode: "HDFCINBB",
+      ifscCode: "HDFC0001122",
       currency: "INR"
     },
     {
@@ -48,6 +51,8 @@ export const portalMockData = {
       beneficiaryAddress: "Sheikh Zayed Road, Dubai, UAE",
       bankName: "Emirates NBD",
       bankAddress: "Baniyas Road, Deira, Dubai, UAE",
+      swiftCode: "EBILAEAD",
+      uaeRoutingCode: "AERTR2244",
       currency: "AED"
     },
     {
@@ -59,6 +64,7 @@ export const portalMockData = {
       beneficiaryAddress: "88 Pudong Avenue, Shanghai, China",
       bankName: "ICBC Shanghai",
       bankAddress: "55 Lujiazui Ring Rd, Shanghai, China",
+      swiftCode: "ICBKCNBJ",
       currency: "CNY"
     },
     {
@@ -70,6 +76,8 @@ export const portalMockData = {
       beneficiaryAddress: "10 Bishopsgate, London, UK",
       bankName: "Barclays Corporate London",
       bankAddress: "1 Churchill Place, London, UK",
+      swiftCode: "BARCGB22",
+      sortCode: "20-11-44",
       currency: "GBP"
     },
     {
@@ -81,6 +89,7 @@ export const portalMockData = {
       beneficiaryAddress: "77 Hafenstraße, Hamburg, Germany",
       bankName: "Deutsche Bank Hamburg",
       bankAddress: "Adolphsplatz 7, Hamburg, Germany",
+      swiftCode: "DEUTDEHH",
       currency: "EUR"
     },
     {
@@ -92,6 +101,7 @@ export const portalMockData = {
       beneficiaryAddress: "3-5 Marunouchi, Tokyo, Japan",
       bankName: "Mizuho Bank Tokyo",
       bankAddress: "1-1 Otemachi, Tokyo, Japan",
+      swiftCode: "MHCBJPJT",
       currency: "JPY"
     },
     {
@@ -103,6 +113,8 @@ export const portalMockData = {
       beneficiaryAddress: "500 Market St, San Francisco, USA",
       bankName: "JPMorgan Chase San Francisco",
       bankAddress: "560 Mission St, San Francisco, USA",
+      swiftCode: "CHASUS33",
+      fedwireCode: "021000021",
       currency: "USD"
     }
   ],
@@ -120,7 +132,7 @@ export const portalMockData = {
     { id: "CNY", label: "CNY (Chinese Yuan)" },
     { id: "INR", label: "INR" }
   ],
-  valueDateOptions: ["Today", "Next Business Day", "Custom Date"],
+  valueDateOptions: ["Today", "Next Business Day", "Customer Date"],
   paymentPurposeOptions: ["Vendor Payment", "Payroll", "Intercompany", "Tax Settlement"],
   senderPurposeCodeOptions: ["SALA", "GDSV", "TRAD", "TAXS"],
   chargesBearerOptions: [
