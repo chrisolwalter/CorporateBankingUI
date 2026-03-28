@@ -92,6 +92,7 @@ const LABELS = {
     upload_documents: "Upload Supporting Documents",
     beneficiary_advice: "Beneficiary Advice Emails",
     remarks: "Remarks",
+    special_deal: "Special Deal",
     submit: "Submit",
     back: "Back",
     confirm_submit: "Confirm / Submit for Authorization",
@@ -121,6 +122,11 @@ const LABELS = {
     payment_details_entered: "Payment Details Entered",
     beneficiary_bank_details: "Beneficiary & Bank Details",
     payment_success: "Payment Submitted Successfully"
+    ,
+    confirmation_summary: "Transaction Summary",
+    beneficiary_summary: "Beneficiary Summary",
+    internal_approvals: "Internal Approvals",
+    send_to_beneficiary_bank: "Send to Beneficiary Bank"
   },
   fr: {
     header_title: "Services de Paiement Bancaire Corporate",
@@ -195,6 +201,7 @@ const LABELS = {
     upload_documents: "Télécharger les justificatifs",
     beneficiary_advice: "Emails d'avis au bénéficiaire",
     remarks: "Remarques",
+    special_deal: "Accord spécial",
     submit: "Soumettre",
     back: "Retour",
     confirm_submit: "Confirmer / Soumettre pour autorisation",
@@ -223,7 +230,11 @@ const LABELS = {
     review_payment: "Vérifier les détails du paiement",
     payment_details_entered: "Détails du paiement saisis",
     beneficiary_bank_details: "Détails bénéficiaire et banque",
-    payment_success: "Paiement soumis avec succès"
+    payment_success: "Paiement soumis avec succès",
+    confirmation_summary: "Résumé de la transaction",
+    beneficiary_summary: "Résumé du bénéficiaire",
+    internal_approvals: "Approbations internes",
+    send_to_beneficiary_bank: "Envoyer à la banque du bénéficiaire"
   }
 };
 
@@ -382,6 +393,7 @@ export default function App() {
   const [valueDate, setValueDate] = useState(defaultValueDateByCutoff());
   const [customDate, setCustomDate] = useState(getTodayDateString(nextBusinessDate(new Date())));
   const [intermediaryBankId, setIntermediaryBankId] = useState("");
+  const [specialDeal, setSpecialDeal] = useState("");
   const [remarks, setRemarks] = useState("");
   const [chargesBearerCode, setChargesBearerCode] = useState(portalMockData.chargesBearerOptions[0].code);
   const [beneficiaryAdvice, setBeneficiaryAdvice] = useState("");
@@ -508,8 +520,8 @@ export default function App() {
       title: t("account_limits"),
       rows: [
         { label: t("available_balance"), value: formatCurrency(debitCurrency, availableBalance) },
-        { label: t("daily_transfer_limit"), value: formatCurrency(debitCurrency, dailyLimit) },
-        { label: t("remaining_balance"), value: formatCurrency(debitCurrency, remainingBalance) }
+        { label: t("remaining_balance"), value: formatCurrency(debitCurrency, remainingBalance) },
+        { label: t("daily_transfer_limit"), value: formatCurrency(debitCurrency, dailyLimit) }
       ]
     },
     {
@@ -568,20 +580,6 @@ export default function App() {
       ]
     },
     {
-      title: t("additional_information"),
-      items: [
-        { label: t("value_date"), value: valueDateLabel(valueDate) },
-        { label: t("custom_date"), value: valueDate === "Custom Date" ? customDate : t("not_selected") },
-        { label: t("debit_value_date"), value: debitValueDate },
-        { label: t("credit_value_date"), value: creditDateRolled ? `${creditValueDate} (${t("rolled")})` : creditValueDate },
-        { label: t("intermediary_bank"), value: selectedIntermediaryBank?.label || "—" },
-        { label: t("charges_bearer"), value: chargesBearerSelection?.label || chargesBearerCode },
-        { label: t("upload_documents"), value: selectedFiles.length ? selectedFiles.join(", ") : "—" },
-        { label: t("beneficiary_advice"), value: beneficiaryAdvice || "—" },
-        { label: t("remarks"), value: remarks || "—" }
-      ]
-    },
-    {
       title: t("beneficiary_bank_details"),
       items: [
         { label: t("beneficiary_name"), value: selectedBeneficiary?.name || "—" },
@@ -591,6 +589,21 @@ export default function App() {
         { label: t("beneficiary_bank_name"), value: selectedBeneficiary?.bankName || "—" },
         { label: t("beneficiary_bank_address"), value: selectedBeneficiary?.bankAddress || "—" },
         ...beneficiaryRoutingRows
+      ]
+    },
+    {
+      title: t("additional_information"),
+      items: [
+        { label: t("value_date"), value: valueDateLabel(valueDate) },
+        { label: t("custom_date"), value: valueDate === "Custom Date" ? customDate : t("not_selected") },
+        { label: t("debit_value_date"), value: debitValueDate },
+        { label: t("credit_value_date"), value: creditDateRolled ? `${creditValueDate} (${t("rolled")})` : creditValueDate },
+        { label: t("intermediary_bank"), value: selectedIntermediaryBank?.label || "—" },
+        { label: t("charges_bearer"), value: chargesBearerSelection?.label || chargesBearerCode },
+        { label: t("special_deal"), value: specialDeal || "—" },
+        { label: t("upload_documents"), value: selectedFiles.length ? selectedFiles.join(", ") : "—" },
+        { label: t("beneficiary_advice"), value: beneficiaryAdvice || "—" },
+        { label: t("remarks"), value: remarks || "—" }
       ]
     }
   ];
@@ -604,10 +617,23 @@ export default function App() {
 
   const bankTimeline = [
     { label: t("payment_instruction_received"), state: "done" },
-    { label: t("compliance_screening"), state: "current" },
-    { label: t("fx_booking_conversion"), state: "pending" },
-    { label: t("payment_processing"), state: "pending" },
+    { label: t("internal_approvals"), state: "current" },
+    { label: t("send_to_beneficiary_bank"), state: "pending" },
     { label: t("beneficiary_credit"), state: "pending" }
+  ];
+
+  const confirmationSummaryRows = [
+    { label: t("debit_account"), value: selectedDebitAccount?.label || "—" },
+    { label: t("debit_amount"), value: `${debitCurrency} ${formatAmountInput(String(debitAmount)) || "0.00"}` },
+    {
+      label: t("beneficiary_summary"),
+      value: selectedBeneficiary
+        ? `${selectedBeneficiary.name} • ${selectedBeneficiary.accountNumber} • ${selectedBeneficiary.country}`
+        : "—"
+    },
+    { label: t("pay_amount"), value: `${payCurrency} ${formatAmountInput(String(payAmount)) || "0.00"}` },
+    { label: t("debit_value_date"), value: debitValueDate },
+    { label: t("credit_value_date"), value: creditValueDate }
   ];
 
   const resetFlow = () => {
@@ -621,6 +647,7 @@ export default function App() {
     setValueDate(defaultValueDateByCutoff());
     setCustomDate(getTodayDateString(nextBusinessDate(new Date())));
     setIntermediaryBankId("");
+    setSpecialDeal("");
     setRemarks("");
     setChargesBearerCode(portalMockData.chargesBearerOptions[0].code);
     setBeneficiaryAdvice("");
@@ -793,6 +820,15 @@ export default function App() {
                     </select>
                   </FormRow>
 
+                  <FormRow id="special-deal" label={t("special_deal")}>
+                    <input
+                      id="special-deal"
+                      type="text"
+                      value={specialDeal}
+                      onChange={(event) => setSpecialDeal(event.target.value)}
+                    />
+                  </FormRow>
+
                   <FormRow id="supporting-documents" label={t("upload_documents")}>
                     <input
                       id="supporting-documents"
@@ -871,6 +907,18 @@ export default function App() {
               <p>{t("your_payment_submitted")}</p>
               <strong>{t("reference")}: {confirmationReference}</strong>
             </div>
+
+            <section className="confirmation-summary">
+              <h3>{t("confirmation_summary")}</h3>
+              <dl className="readonly-list">
+                {confirmationSummaryRows.map((row) => (
+                  <div className="readonly-row" key={row.label}>
+                    <dt>{row.label}</dt>
+                    <dd>{row.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
 
             <div className="confirmation-timelines">
               <Timeline title={t("corporate_authorization_steps")} steps={corporateTimeline} t={t} />

@@ -638,6 +638,20 @@ body {
   color: #0f172a;
 }
 
+.confirmation-summary {
+  margin-top: 0.9rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.6rem;
+  background: #f8fafc;
+  padding: 0.75rem;
+}
+
+.confirmation-summary h3 {
+  margin: 0 0 0.65rem;
+  font-size: 0.86rem;
+  color: #1e3a8a;
+}
+
 .confirmation-timelines {
   margin-top: 1rem;
   display: grid;
