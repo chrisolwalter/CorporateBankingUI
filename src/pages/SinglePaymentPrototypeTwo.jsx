@@ -5,6 +5,7 @@ import { CollapsibleCard } from "../components/cards/CollapsibleCard";
 import { FormRow } from "../components/fields/FormRow";
 import { SearchableSelect } from "../components/fields/SearchableSelect";
 import { Timeline, ReviewList } from "./sharedSections";
+import { ConfirmationSummarySection } from "./ConfirmationSummarySection";
 
 export function SinglePaymentPrototypeTwo({ m }) {
   if (m.currentStep === 0) {
@@ -24,7 +25,7 @@ export function SinglePaymentPrototypeTwo({ m }) {
               </div>
             </PortalCard>
 
-            <CollapsibleCard title={m.t("additional_information")} defaultExpanded>
+            <CollapsibleCard title={m.t("additional_information")} defaultExpanded={false}>
               <div className="form-grid">
                 <FormRow id="value-date-v2" label={m.t("value_date")} required><select id="value-date-v2" value={m.valueDate} onChange={(e) => m.setValueDate(e.target.value)}>{m.portalMockData.valueDateOptions.map((o) => (o === "Today" && m.isCutoffPassed ? null : <option key={o} value={o}>{m.valueDateLabel(o)}</option>))}</select></FormRow>
                 {m.valueDate === "Custom Date" ? <FormRow id="custom-date-v2" label={m.t("debit_value_date")}><input id="custom-date-v2" type="date" min={m.minCustomDate} value={m.customDate} onChange={(e) => m.setCustomDate(e.target.value)} /></FormRow> : null}
@@ -43,20 +44,30 @@ export function SinglePaymentPrototypeTwo({ m }) {
             <div className="page-actions page-actions--right"><button type="button" className="btn btn--primary" onClick={() => { if (!(m.isCutoffPassed && m.valueDate === "Today")) m.setCurrentStep(1); }}>{m.t("submit")}</button></div>
           </>
         }
-        rightColumn={<div className="derived-sections derived-sections--standalone">{m.rightSections.map((s) => <CollapsibleCard key={s.title} title={s.title} defaultExpanded><DerivedSection title={s.title} rows={s.rows} variant={s.title === m.t("validation_status_section") ? "status" : s.title === m.t("charges_fx") ? "financial" : "default"} hideTitle /></CollapsibleCard>)}</div>}
+        rightColumn={
+          <div className="derived-sections derived-sections--standalone">
+            {[...m.rightSections]
+              .sort((a, b) => (a.title === m.t("beneficiary_details") ? -1 : b.title === m.t("beneficiary_details") ? 1 : 0))
+              .map((s) => (
+                <CollapsibleCard key={s.title} title={s.title} defaultExpanded={s.title !== m.t("beneficiary_details")}>
+                  <DerivedSection title={s.title} rows={s.rows} variant={s.title === m.t("validation_status_section") ? "status" : s.title === m.t("charges_fx") ? "financial" : "default"} hideTitle />
+                </CollapsibleCard>
+              ))}
+          </div>
+        }
       />
     );
   }
 
   if (m.currentStep === 1) {
-    return <PageContent leftColumn={<><PortalCard title={`${m.t("review_payment")} (V2)`} variant="emphasis"><div className="review-layout">{m.reviewLeftGroups.map((g) => <ReviewList key={g.title} title={g.title} items={g.items} />)}</div></PortalCard><div className="page-actions"><button type="button" className="btn btn--secondary" onClick={() => m.setCurrentStep(0)}>{m.t("back")}</button><button type="button" className="btn btn--primary" onClick={() => { m.setConfirmationReference(m.DEFAULT_CONFIRMATION_REFERENCE); m.setCurrentStep(2); }}>{m.t("confirm_submit")}</button></div></>} rightColumn={<div className="derived-sections derived-sections--standalone">{m.rightSections.map((s) => <CollapsibleCard key={s.title} title={s.title}><DerivedSection title={s.title} rows={s.rows} hideTitle /></CollapsibleCard>)}</div>} />;
+    return <PageContent leftColumn={<><PortalCard title={`${m.t("review_payment")} (V2)`} variant="emphasis"><div className="review-layout">{m.reviewLeftGroups.map((g) => <ReviewList key={g.title} title={g.title} items={g.items} />)}</div></PortalCard><div className="page-actions"><button type="button" className="btn btn--secondary" onClick={() => m.setCurrentStep(0)}>{m.t("back")}</button><button type="button" className="btn btn--primary" onClick={() => { m.setConfirmationReference(m.DEFAULT_CONFIRMATION_REFERENCE); m.setCurrentStep(2); }}>{m.t("confirm_submit")}</button></div></>} rightColumn={<div className="derived-sections derived-sections--standalone">{[...m.rightSections].sort((a, b) => (a.title === m.t("beneficiary_details") ? -1 : b.title === m.t("beneficiary_details") ? 1 : 0)).map((s) => <CollapsibleCard key={s.title} title={s.title} defaultExpanded={s.title !== m.t("beneficiary_details")}><DerivedSection title={s.title} rows={s.rows} hideTitle /></CollapsibleCard>)}</div>} />;
   }
 
   return (
     <section className="confirmation-page">
       <PortalCard title={m.t("payment_success")} variant="emphasis">
         <div className="confirmation-banner"><p>{m.t("your_payment_submitted")}</p><strong>{m.t("reference")}: {m.confirmationReference}</strong></div>
-        <section className="confirmation-summary"><h3>{m.t("confirmation_summary")}</h3><dl className="readonly-list">{m.confirmationSummaryRows.map((row) => <div className="readonly-row" key={row.label}><dt>{row.label}</dt><dd>{row.value}</dd></div>)}</dl></section>
+        <ConfirmationSummarySection title={m.t("confirmation_summary")} rows={m.confirmationSummaryPairedRows} />
         <div className="confirmation-timelines"><Timeline title={m.t("corporate_authorization_steps")} steps={m.corporateTimeline} t={m.t} /><Timeline title={m.t("bank_processing_steps")} steps={m.bankTimeline} t={m.t} /></div>
         <div className="page-actions"><button type="button" className="btn btn--secondary" onClick={m.resetFlow}>{m.t("create_another")}</button><button type="button" className="btn btn--primary" onClick={m.resetFlow}>{m.t("back_to_payments")}</button></div>
       </PortalCard>

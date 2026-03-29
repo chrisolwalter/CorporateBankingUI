@@ -4,6 +4,7 @@ import { DerivedSection } from "../components/cards/DerivedSection";
 import { FormRow } from "../components/fields/FormRow";
 import { SearchableSelect } from "../components/fields/SearchableSelect";
 import { Timeline, ReviewList } from "./sharedSections";
+import { ConfirmationSummarySection } from "./ConfirmationSummarySection";
 
 export function SinglePaymentPrototypeOne({ m }) {
   if (m.currentStep === 0) {
@@ -63,7 +64,7 @@ export function SinglePaymentPrototypeOne({ m }) {
     <section className="confirmation-page">
       <PortalCard title={m.t("payment_success")} variant="emphasis">
         <div className="confirmation-banner"><p>{m.t("your_payment_submitted")}</p><strong>{m.t("reference")}: {m.confirmationReference}</strong></div>
-        <section className="confirmation-summary"><h3>{m.t("confirmation_summary")}</h3><dl className="readonly-list">{m.confirmationSummaryRows.map((row) => <div className="readonly-row" key={row.label}><dt>{row.label}</dt><dd>{row.value}</dd></div>)}</dl></section>
+        <ConfirmationSummarySection title={m.t("confirmation_summary")} rows={m.confirmationSummaryPairedRows} />
         <div className="confirmation-timelines"><Timeline title={m.t("corporate_authorization_steps")} steps={m.corporateTimeline} t={m.t} /><Timeline title={m.t("bank_processing_steps")} steps={m.bankTimeline} t={m.t} /></div>
         <div className="page-actions"><button type="button" className="btn btn--secondary" onClick={m.resetFlow}>{m.t("create_another")}</button><button type="button" className="btn btn--primary" onClick={m.resetFlow}>{m.t("back_to_payments")}</button></div>
       </PortalCard>

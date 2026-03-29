@@ -728,6 +728,36 @@ body {
   color: #1e3a8a;
 }
 
+.confirmation-summary-grid {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.confirmation-summary-grid__row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+  border-bottom: 1px solid #e3ebf5;
+  padding-bottom: 0.45rem;
+}
+
+.confirmation-summary-grid__row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.confirmation-summary-grid__cell dt {
+  font-size: 0.78rem;
+  color: #6a7e95;
+}
+
+.confirmation-summary-grid__cell dd {
+  margin: 0.18rem 0 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #102843;
+}
+
 .confirmation-timelines {
   margin-top: 1rem;
   display: grid;
@@ -888,6 +918,11 @@ body {
 
   .confirmation-timelines {
     grid-template-columns: 1fr;
+  }
+
+  .confirmation-summary-grid__row {
+    grid-template-columns: 1fr;
+    gap: 0.45rem;
   }
 
   .page-actions {

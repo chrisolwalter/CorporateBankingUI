@@ -131,6 +131,11 @@ export function usePaymentFormState() {
   const bankTimeline = [{ label: t("payment_instruction_received"), state: "done" }, { label: t("internal_approvals"), state: "current" }, { label: t("send_to_beneficiary_bank"), state: "pending" }, { label: t("beneficiary_credit"), state: "pending" }];
 
   const confirmationSummaryRows = [{ label: t("debit_account"), value: selectedDebitAccount?.label || "—" }, { label: t("debit_amount"), value: `${debitCurrency} ${formatAmountInput(String(debitAmount)) || "0.00"}` }, { label: t("beneficiary_summary"), value: selectedBeneficiary ? `${selectedBeneficiary.name} • ${selectedBeneficiary.accountNumber} • ${selectedBeneficiary.country}` : "—" }, { label: t("pay_amount"), value: `${payCurrency} ${formatAmountInput(String(payAmount)) || "0.00"}` }, { label: t("debit_value_date"), value: debitValueDate }, { label: t("credit_value_date"), value: creditValueDate }];
+  const confirmationSummaryPairedRows = [
+    { left: confirmationSummaryRows[0], right: confirmationSummaryRows[2] },
+    { left: confirmationSummaryRows[1], right: confirmationSummaryRows[3] },
+    { left: confirmationSummaryRows[4], right: confirmationSummaryRows[5] }
+  ];
 
   const resetFlow = () => { setCurrentStep(0); setBeneficiaryId(""); setPaymentPurpose(portalMockData.paymentPurposeOptions[0]); setSenderPurposeCode(""); setAmountMode("debit"); setAmountCurrency(portalMockData.transferCurrencies[0].id); setAmount(""); setValueDate(defaultValueDateByCutoff()); setCustomDate(getTodayDateString(nextBusinessDate(new Date()))); setIntermediaryBankId(""); setSpecialDeal(""); setRemarks(""); setChargesBearerCode(portalMockData.chargesBearerOptions[0].code); setBeneficiaryAdvice(""); setAdviceError(""); setSelectedFiles([]); setConfirmationReference(DEFAULT_CONFIRMATION_REFERENCE); };
 
@@ -142,6 +147,6 @@ export function usePaymentFormState() {
     specialDeal, setSpecialDeal, remarks, setRemarks, chargesBearerCode, setChargesBearerCode, beneficiaryAdvice, setBeneficiaryAdvice, adviceError, setAdviceError, selectedFiles, setSelectedFiles,
     requiresSenderPurposeCode, isCutoffPassed, valueDateLabel, parseEmails, formatAmountInput, rightSections, reviewLeftGroups,
     selectedIntermediaryBank, chargesBearerSelection, resetFlow, confirmationReference, setConfirmationReference, DEFAULT_CONFIRMATION_REFERENCE,
-    confirmationSummaryRows, corporateTimeline, bankTimeline, isFrenchMode
+    confirmationSummaryRows, confirmationSummaryPairedRows, corporateTimeline, bankTimeline, isFrenchMode
   };
 }
