@@ -1,8 +1,8 @@
 import { ReadOnlyRow } from "../fields/ReadOnlyRow";
 
-export function DerivedSection({ title, rows }) {
+export function DerivedSection({ title, rows, variant = "default" }) {
   return (
-    <section className="derived-section" aria-label={title}>
+    <section className={`derived-section derived-section--${variant}`} aria-label={title}>
       <h3>{title}</h3>
       <dl className="readonly-list">
         {rows.map((row) => (

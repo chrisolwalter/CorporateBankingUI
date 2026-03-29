@@ -35,8 +35,11 @@ export function SearchableSelect({
   };
 
   return (
-    <div className="searchable-select" onBlur={() => setTimeout(() => setIsOpen(false), 120)}>
-      <label htmlFor={id}>{label}</label>
+    <div className={`searchable-select ${required ? "searchable-select--required" : ""}`} onBlur={() => setTimeout(() => setIsOpen(false), 120)}>
+      <label htmlFor={id}>
+        {label}
+        {required ? <span className="required-indicator" aria-hidden="true"> *</span> : null}
+      </label>
       <input
         id={id}
         role="combobox"

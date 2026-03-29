@@ -713,7 +713,7 @@ export default function App() {
         <PageContent
           leftColumn={
             <>
-              <PortalCard title={t("single_payment_details")}>
+              <PortalCard title={t("single_payment_details")} variant="primary">
                 <div className="form-stack">
                   <SearchableSelect
                     id="debit-account"
@@ -723,6 +723,7 @@ export default function App() {
                     onChange={setDebitAccountId}
                     placeholder={t("search_debit_account")}
                     emptyLabel={t("no_matching_results")}
+                    required
                   />
 
                   <SearchableSelect
@@ -735,6 +736,7 @@ export default function App() {
                     noDefault
                     noSelectionLabel={t("no_selection")}
                     emptyLabel={t("no_matching_results")}
+                    required
                   />
 
                   <div className="amount-control-row">
@@ -751,9 +753,10 @@ export default function App() {
                       onChange={setAmountCurrency}
                       placeholder={t("search_currency")}
                       emptyLabel={t("no_matching_results")}
+                      required
                     />
 
-                    <FormRow id="amount" label={t("amount")}>
+                    <FormRow id="amount" label={t("amount")} required>
                       <input
                         id="amount"
                         type="text"
@@ -768,7 +771,7 @@ export default function App() {
                   </div>
 
                   <div className="form-grid form-grid--mandatory-purpose">
-                    <FormRow id="payment-purpose" label={t("payment_purpose")}>
+                    <FormRow id="payment-purpose" label={t("payment_purpose")} required>
                       <select id="payment-purpose" value={paymentPurpose} onChange={(event) => setPaymentPurpose(event.target.value)}>
                         {portalMockData.paymentPurposeOptions.map((option) => (
                           <option key={option} value={option}>{option}</option>
@@ -790,9 +793,9 @@ export default function App() {
                 </div>
               </PortalCard>
 
-              <PortalCard title={t("additional_information")}>
+              <PortalCard title={t("additional_information")} variant="primary">
                 <div className="form-grid">
-                  <FormRow id="value-date" label={t("value_date")}>
+                  <FormRow id="value-date" label={t("value_date")} required>
                     <select id="value-date" value={valueDate} onChange={(event) => setValueDate(event.target.value)}>
                       {portalMockData.valueDateOptions.map((option) => {
                         if (option === "Today" && isCutoffPassed) return null;
@@ -882,7 +885,24 @@ export default function App() {
               </div>
             </>
           }
-          rightColumn={<div className="derived-sections derived-sections--standalone">{rightSections.map((section) => <DerivedSection key={section.title} title={section.title} rows={section.rows} />)}</div>}
+          rightColumn={
+            <div className="derived-sections derived-sections--standalone">
+              {rightSections.map((section) => (
+                <DerivedSection
+                  key={section.title}
+                  title={section.title}
+                  rows={section.rows}
+                  variant={
+                    section.title === t("validation_status_section")
+                      ? "status"
+                      : section.title === t("charges_fx")
+                      ? "financial"
+                      : "default"
+                  }
+                />
+              ))}
+            </div>
+          }
         />
       ) : null}
 
@@ -890,7 +910,7 @@ export default function App() {
         <PageContent
           leftColumn={
             <>
-              <PortalCard title={t("review_payment")}>
+              <PortalCard title={t("review_payment")} variant="emphasis">
                 <div className="review-layout">
                   {reviewLeftGroups.map((group) => (
                     <ReviewList key={group.title} title={group.title} items={group.items} />
@@ -904,13 +924,30 @@ export default function App() {
               </div>
             </>
           }
-          rightColumn={<div className="derived-sections derived-sections--standalone">{rightSections.map((section) => <DerivedSection key={section.title} title={section.title} rows={section.rows} />)}</div>}
+          rightColumn={
+            <div className="derived-sections derived-sections--standalone">
+              {rightSections.map((section) => (
+                <DerivedSection
+                  key={section.title}
+                  title={section.title}
+                  rows={section.rows}
+                  variant={
+                    section.title === t("validation_status_section")
+                      ? "status"
+                      : section.title === t("charges_fx")
+                      ? "financial"
+                      : "default"
+                  }
+                />
+              ))}
+            </div>
+          }
         />
       ) : null}
 
       {currentStep === 2 ? (
         <section className="confirmation-page">
-          <PortalCard title={t("payment_success")}>
+          <PortalCard title={t("payment_success")} variant="emphasis">
             <div className="confirmation-banner">
               <p>{t("your_payment_submitted")}</p>
               <strong>{t("reference")}: {confirmationReference}</strong>
