@@ -35,6 +35,15 @@ body {
   min-width: 0;
   display: grid;
   grid-template-rows: auto 1fr;
+  align-content: start;
+}
+
+.portal-top-stack {
+  display: block;
+  height: auto;
+  min-height: 0;
+  flex: 0 0 auto;
+  align-self: start;
 }
 
 .portal-sidebar {
@@ -239,6 +248,10 @@ body {
   top: 0;
   z-index: 25;
   box-shadow: 0 3px 12px rgba(15, 23, 42, 0.08);
+  height: auto;
+  min-height: 0;
+  flex: 0 0 auto;
+  align-self: start;
 }
 
 .step-tracker__meta {

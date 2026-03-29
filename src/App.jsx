@@ -37,7 +37,7 @@ export default function App() {
         />
       }
       header={
-        <>
+        <div className="portal-top-stack">
           <Header
             portalTitle={m.t("header_title")}
             currentTime={m.headerTime}
@@ -51,7 +51,7 @@ export default function App() {
             onCountryChange={(nextCountryCode) => { m.setCountryCode(nextCountryCode); m.setLanguage("English"); }}
           />
           <StepTracker steps={[m.t("initiate"), m.t("review"), m.t("confirmation")]} currentStep={m.currentStep} progress={m.stepProgress} completed={m.currentStep === 2} completeLabel={m.t("complete")} stepLabelPrefix={m.t("step")} />
-        </>
+        </div>
       }
     >
       {m.prototype === "p1" ? <SinglePaymentPrototypeOne m={m} /> : <SinglePaymentPrototypeTwo m={m} />}
