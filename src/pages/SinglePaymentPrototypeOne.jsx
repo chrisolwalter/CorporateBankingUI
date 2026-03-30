@@ -1,6 +1,7 @@
 import { PageContent } from "../components/layout/PageContent";
 import { PortalCard } from "../components/cards/PortalCard";
 import { DerivedSection } from "../components/cards/DerivedSection";
+import { AIAutofillActionCard } from "../components/cards/AIAutofillActionCard";
 import { FormRow } from "../components/fields/FormRow";
 import { SearchableSelect } from "../components/fields/SearchableSelect";
 import { Timeline, ReviewList } from "./sharedSections";
@@ -51,13 +52,13 @@ export function SinglePaymentPrototypeOne({ m }) {
             <div className="page-actions page-actions--right"><button type="button" className="btn btn--primary" onClick={() => { if (!(m.isCutoffPassed && m.valueDate === "Today")) m.setCurrentStep(1); }}>{m.t("submit")}</button></div>
           </>
         }
-        rightColumn={<div className="derived-sections derived-sections--standalone">{m.rightSections.map((s) => <DerivedSection key={s.title} title={s.title} rows={s.rows} variant={s.title === m.t("validation_status_section") ? "status" : s.title === m.t("charges_fx") ? "financial" : "default"} />)}</div>}
+        rightColumn={<div className="derived-sections derived-sections--standalone"><AIAutofillActionCard onFilesSelected={m.setSelectedFiles} />{m.selectedFiles.length ? <p className="inline-note">{m.selectedFiles.join(", ")}</p> : null}{m.rightSections.map((s) => <DerivedSection key={s.title} title={s.title} rows={s.rows} variant={s.title === m.t("validation_status_section") ? "status" : s.title === m.t("charges_fx") ? "financial" : "default"} />)}</div>}
       />
     );
   }
 
   if (m.currentStep === 1) {
-    return <PageContent leftColumn={<><PortalCard title={m.t("review_payment")} variant="emphasis"><div className="review-layout">{m.reviewLeftGroups.map((g) => <ReviewList key={g.title} title={g.title} items={g.items} />)}</div></PortalCard><div className="page-actions"><button type="button" className="btn btn--secondary" onClick={() => m.setCurrentStep(0)}>{m.t("back")}</button><button type="button" className="btn btn--primary" onClick={() => { m.setConfirmationReference(m.DEFAULT_CONFIRMATION_REFERENCE); m.setCurrentStep(2); }}>{m.t("confirm_submit")}</button></div></>} rightColumn={<div className="derived-sections derived-sections--standalone">{m.rightSections.map((s) => <DerivedSection key={s.title} title={s.title} rows={s.rows} variant={s.title === m.t("validation_status_section") ? "status" : s.title === m.t("charges_fx") ? "financial" : "default"} />)}</div>} />;
+    return <PageContent leftColumn={<><PortalCard title={m.t("review_payment")} variant="emphasis"><div className="review-layout">{m.reviewLeftGroups.map((g) => <ReviewList key={g.title} title={g.title} items={g.items} />)}</div></PortalCard><div className="page-actions"><button type="button" className="btn btn--secondary" onClick={() => m.setCurrentStep(0)}>{m.t("back")}</button><button type="button" className="btn btn--primary" onClick={() => { m.setConfirmationReference(m.DEFAULT_CONFIRMATION_REFERENCE); m.setCurrentStep(2); }}>{m.t("confirm_submit")}</button></div></>} rightColumn={<div className="derived-sections derived-sections--standalone"><AIAutofillActionCard onFilesSelected={m.setSelectedFiles} />{m.selectedFiles.length ? <p className="inline-note">{m.selectedFiles.join(", ")}</p> : null}{m.rightSections.map((s) => <DerivedSection key={s.title} title={s.title} rows={s.rows} variant={s.title === m.t("validation_status_section") ? "status" : s.title === m.t("charges_fx") ? "financial" : "default"} />)}</div>} />;
   }
 
   return (

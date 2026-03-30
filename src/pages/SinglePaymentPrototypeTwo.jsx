@@ -1,16 +1,14 @@
-import { useRef } from "react";
 import { PageContent } from "../components/layout/PageContent";
 import { PortalCard } from "../components/cards/PortalCard";
 import { DerivedSection } from "../components/cards/DerivedSection";
 import { CollapsibleCard } from "../components/cards/CollapsibleCard";
+import { AIAutofillActionCard } from "../components/cards/AIAutofillActionCard";
 import { FormRow } from "../components/fields/FormRow";
 import { SearchableSelect } from "../components/fields/SearchableSelect";
 import { Timeline, ReviewList } from "./sharedSections";
 import { ConfirmationSummarySection } from "./ConfirmationSummarySection";
 
 export function SinglePaymentPrototypeTwo({ m }) {
-  const uploadInputRef = useRef(null);
-  const handleScanInvoiceClick = () => uploadInputRef.current?.click();
   const orderedRightSections = [...m.rightSections].sort((a, b) => {
     const order = {
       [m.t("account_limits")]: 1,
@@ -55,20 +53,7 @@ export function SinglePaymentPrototypeTwo({ m }) {
         }
         rightColumn={
           <div className="derived-sections derived-sections--standalone">
-            <button type="button" className="scan-invoice-card" onClick={handleScanInvoiceClick}>
-              <span className="scan-invoice-card__icon" aria-hidden="true">📄</span>
-              <span className="scan-invoice-card__content">
-                <strong>Scan Invoice</strong>
-                <small>Upload document to auto-fill payment</small>
-              </span>
-            </button>
-            <input
-              ref={uploadInputRef}
-              type="file"
-              accept=".pdf,.jpg,.jpeg,.png"
-              hidden
-              onChange={(e) => m.setSelectedFiles(Array.from(e.target.files || []).map((f) => f.name))}
-            />
+            <AIAutofillActionCard onFilesSelected={m.setSelectedFiles} />
             {m.selectedFiles.length ? <p className="inline-note">{m.selectedFiles.join(", ")}</p> : null}
             {orderedRightSections.map((s) => (
                 <CollapsibleCard key={s.title} title={s.title} defaultExpanded={s.title !== m.t("beneficiary_details")}>
@@ -82,7 +67,7 @@ export function SinglePaymentPrototypeTwo({ m }) {
   }
 
   if (m.currentStep === 1) {
-    return <PageContent leftColumn={<><PortalCard title={`${m.t("review_payment")} (V2)`} variant="emphasis"><div className="review-layout">{m.reviewLeftGroups.map((g) => <ReviewList key={g.title} title={g.title} items={g.items} />)}</div></PortalCard><div className="page-actions"><button type="button" className="btn btn--secondary" onClick={() => m.setCurrentStep(0)}>{m.t("back")}</button><button type="button" className="btn btn--primary" onClick={() => { m.setConfirmationReference(m.DEFAULT_CONFIRMATION_REFERENCE); m.setCurrentStep(2); }}>{m.t("confirm_submit")}</button></div></>} rightColumn={<div className="derived-sections derived-sections--standalone"><button type="button" className="scan-invoice-card" onClick={handleScanInvoiceClick}><span className="scan-invoice-card__icon" aria-hidden="true">📄</span><span className="scan-invoice-card__content"><strong>Scan Invoice</strong><small>Upload document to auto-fill payment</small></span></button><input ref={uploadInputRef} type="file" accept=".pdf,.jpg,.jpeg,.png" hidden onChange={(e) => m.setSelectedFiles(Array.from(e.target.files || []).map((f) => f.name))} />{m.selectedFiles.length ? <p className="inline-note">{m.selectedFiles.join(", ")}</p> : null}{orderedRightSections.map((s) => <CollapsibleCard key={s.title} title={s.title} defaultExpanded={s.title !== m.t("beneficiary_details")}><DerivedSection title={s.title} rows={s.rows} hideTitle /></CollapsibleCard>)}</div>} />;
+    return <PageContent leftColumn={<><PortalCard title={`${m.t("review_payment")} (V2)`} variant="emphasis"><div className="review-layout">{m.reviewLeftGroups.map((g) => <ReviewList key={g.title} title={g.title} items={g.items} />)}</div></PortalCard><div className="page-actions"><button type="button" className="btn btn--secondary" onClick={() => m.setCurrentStep(0)}>{m.t("back")}</button><button type="button" className="btn btn--primary" onClick={() => { m.setConfirmationReference(m.DEFAULT_CONFIRMATION_REFERENCE); m.setCurrentStep(2); }}>{m.t("confirm_submit")}</button></div></>} rightColumn={<div className="derived-sections derived-sections--standalone"><AIAutofillActionCard onFilesSelected={m.setSelectedFiles} />{m.selectedFiles.length ? <p className="inline-note">{m.selectedFiles.join(", ")}</p> : null}{orderedRightSections.map((s) => <CollapsibleCard key={s.title} title={s.title} defaultExpanded={s.title !== m.t("beneficiary_details")}><DerivedSection title={s.title} rows={s.rows} hideTitle /></CollapsibleCard>)}</div>} />;
   }
 
   return (
