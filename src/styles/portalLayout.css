@@ -875,6 +875,48 @@ body {
   padding: 0.82rem;
 }
 
+.scan-invoice-card {
+  width: 100%;
+  border: 1px solid #cfdff1;
+  border-radius: 0.72rem;
+  background: linear-gradient(180deg, #f7fbff 0%, #f1f7fe 100%);
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.72rem 0.8rem;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.05);
+}
+
+.scan-invoice-card:hover {
+  border-color: #9ebee0;
+  box-shadow: 0 6px 14px rgba(24, 78, 146, 0.1);
+}
+
+.scan-invoice-card__icon {
+  width: 1.8rem;
+  height: 1.8rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  background: #e0edfb;
+}
+
+.scan-invoice-card__content strong {
+  display: block;
+  font-size: 0.88rem;
+  color: #133f6e;
+}
+
+.scan-invoice-card__content small {
+  display: block;
+  margin-top: 0.12rem;
+  font-size: 0.76rem;
+  color: #5f748d;
+}
+
 @media (max-width: 1060px) {
   .portal-page-content {
     grid-template-columns: 1fr;
